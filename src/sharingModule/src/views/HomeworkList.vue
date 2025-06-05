@@ -298,10 +298,10 @@
 <script setup>
 import { ref, computed, onMounted, defineProps } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import api from '@/api/api';
+import api from '../api/api';
 import dayjs from 'dayjs';
-import ResourceSelector from '@/components/ResourceSelector.vue';
-import downloadApi from '@/api/downloadApi';
+import ResourceSelector from '../components/ResourceSelector.vue';
+import downloadApi from '../api/downloadApi';
 
 const props = defineProps({
   userId: {

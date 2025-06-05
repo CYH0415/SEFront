@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import api from '@/api/api';
+import api from '../api/api';
 import { ElMessage } from 'element-plus';
 import { ref, computed, onMounted, defineProps } from 'vue';
 

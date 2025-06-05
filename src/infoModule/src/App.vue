@@ -7,23 +7,22 @@
           background-color="transparent"
           text-color="#fff"
           :default-active="route.path"
-      >
-        <el-menu-item index="1">
-          <router-link to="/information-manage">用户信息管理</router-link>
+      >        <el-menu-item index="1">
+          <router-link to="/info/information-manage">用户信息管理</router-link>
         </el-menu-item>
         <el-menu-item index="2">
-          <router-link to="/course-manage">课程基本信息管理</router-link>
+          <router-link to="/info/course-manage">课程基本信息管理</router-link>
         </el-menu-item>
         <el-sub-menu index = "3" proper-offset = "0">
           <template #title>成绩管理</template>
           <el-menu-item index="3-1">
-            <router-link to="/grade-query">成绩查询</router-link>
+            <router-link to="/info/grade-query">成绩查询</router-link>
           </el-menu-item>
           <el-menu-item index="3-2">
-            <router-link to="/grade-modify">成绩修改</router-link>
+            <router-link to="/info/grade-modify">成绩修改</router-link>
           </el-menu-item>
           <el-menu-item index="3-3">
-            <router-link to ="/grade-analyze">成绩分析</router-link>
+            <router-link to="/info/grade-analyze">成绩分析</router-link>
           </el-menu-item>
         </el-sub-menu>
       </el-menu>

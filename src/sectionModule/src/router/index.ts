@@ -37,7 +37,7 @@ const routes = [
   { path: '/result-query', name: 'ResultQuery', component: ResultQuery },
 ]
 
-export const router = createRouter({
+export const sectionRouter = createRouter({
   history: createWebHistory(),
   routes,
 })

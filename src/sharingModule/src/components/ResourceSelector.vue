@@ -95,7 +95,7 @@
 <script setup>
 import { ElMessage } from 'element-plus';
 import { ref, watch, computed, defineProps, defineEmits } from 'vue';
-import api from '@/api/api';
+import api from '../api/api';
 
 // props
 const props = defineProps({

@@ -1,9 +1,8 @@
 <template>
   <div class="layout">
     <aside class="sidebar">
-      <h2>课程资源共享子系统</h2>
-      <nav>
-        <router-link to="/course-list">我的课程</router-link>
+      <h2>课程资源共享子系统</h2>      <nav>
+        <router-link to="/sharing/course-list">我的课程</router-link>
       </nav>
     </aside>
 

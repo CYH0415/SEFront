@@ -4,18 +4,17 @@
     <!-- 条件渲染侧边栏 -->
     <aside v-if="isLoggedIn" class="sidebar">
       <h2>在线测试子系统</h2>
-      <nav>
-        <!-- 根据角色动态显示菜单 -->
-        <router-link to="/student/dashboard" v-if="isStudent">考试信息</router-link>
-        <router-link to="/student/results" v-if="isStudent">答题记录</router-link>
-        <router-link to="/student/past-papers" v-if="isStudent">历年真题</router-link>
+      <nav>        <!-- 根据角色动态显示菜单 -->
+        <router-link to="/testing/student/dashboard" v-if="isStudent">考试信息</router-link>
+        <router-link to="/testing/student/results" v-if="isStudent">答题记录</router-link>
+        <router-link to="/testing/student/past-papers" v-if="isStudent">历年真题</router-link>
 
-        <router-link to="/teacher/dashboard" v-if="isTeacher">教师首页</router-link>
-        <router-link to="/teacher/question-bank" v-if="isTeacher">题库管理</router-link>
-        <router-link to="/teacher/create-paper" v-if="isTeacher">编辑发布试卷</router-link>
-        <router-link to="/teacher/past-papers" v-if="isTeacher">查看历年卷</router-link>
-        <router-link to="/teacher/exam-management" v-if="isTeacher">考试情况管理</router-link>
-        <router-link to="/teacher/endedexam-detail" v-if="isTeacher">考试成绩管理</router-link>
+        <router-link to="/testing/teacher/dashboard" v-if="isTeacher">教师首页</router-link>
+        <router-link to="/testing/teacher/question-bank" v-if="isTeacher">题库管理</router-link>
+        <router-link to="/testing/teacher/create-paper" v-if="isTeacher">编辑发布试卷</router-link>
+        <router-link to="/testing/teacher/past-papers" v-if="isTeacher">查看历年卷</router-link>
+        <router-link to="/testing/teacher/exam-management" v-if="isTeacher">考试情况管理</router-link>
+        <router-link to="/testing/teacher/endedexam-detail" v-if="isTeacher">考试成绩管理</router-link>
       </nav>
     </aside>
 

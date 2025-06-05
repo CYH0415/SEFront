@@ -127,8 +127,8 @@
 </template>
 
 <script setup>
-import api from '@/api/api';
-import downloadApi from '@/api/downloadApi';
+import api from '../api/api';
+import downloadApi from '../api/downloadApi';
 import { ElMessage } from 'element-plus';
 import { ref, defineProps, onMounted } from 'vue'
 import ResourceSelector from '../components/ResourceSelector.vue';
