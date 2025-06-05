@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Home from '../views/Home.vue'
 import Section from '../sectionModule/src/App.vue'
 
 // Section Module imports
@@ -65,7 +66,7 @@ import HelpSelect from '../selectionModule/admin/src/components/HelpSelect.vue'
 const TeacherRequest = () => import('../sectionModule/src/pages/TeacherRequest.vue')
 
 const routes = [
-  { path: '/', redirect: '/section/resource-manage' },
+  { path: '/', name: 'Home', component: Home }, // 主页，显示导航界面
   { 
     path: '/section', 
     name: 'Section', 
