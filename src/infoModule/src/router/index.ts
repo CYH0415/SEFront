@@ -1,5 +1,4 @@
 import { createWebHistory, createRouter } from "vue-router";
-import Login from "../components/Login.vue"
 import InformationManage from "../components/InformationManage.vue";
 import CourseManage from "../components/CourseManage.vue";
 import GradeQuery from "../components/GradeQuery.vue";
@@ -7,8 +6,7 @@ import GradeModify from "../components/GradeModify.vue";
 import GradeAnalyze from "../components/GradeAnalyze.vue";
 
 const routes = [
-    { path: '/', redirect: '/login' },
-    { path: "/login", component: Login},
+    { path: '/', redirect: '/information-manage' },
     { path: "/information-manage", component: InformationManage },
     { path: "/course-manage", component: CourseManage },
     { path: "/grade-query", component: GradeQuery },

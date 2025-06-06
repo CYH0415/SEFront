@@ -116,8 +116,7 @@ const routes = [
     name: 'Info', 
     component: InfoApp,
     children: [
-    //   { path: '', redirect: 'login' },
-      { path: 'login', name: 'InfoLogin', component: Login },
+      //{ path: '', redirect: 'login' },
       { path: 'information-manage', name: 'InformationManage', component: InformationManage },
       { path: 'course-manage', name: 'CourseManage', component: CourseManage },
       { path: 'grade-query', name: 'GradeQuery', component: GradeQuery },

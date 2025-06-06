@@ -27,7 +27,7 @@ const showNavigation = computed(() => route.path === '/')
         </div>
 
         <div class="module-card">
-          <router-link to="/info/login" class="module-link">
+          <router-link to="/info/information-manage" class="module-link">
             <div class="module-icon">👥</div>
             <h3>信息管理子系统</h3>
             <p>用户信息管理、课程基本信息管理、成绩管理</p>
