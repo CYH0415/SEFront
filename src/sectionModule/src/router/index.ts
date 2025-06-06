@@ -9,12 +9,12 @@ import ResultQuery from '../pages/ResultQuery.vue'
 const TeacherRequest = () => import('../pages/TeacherRequest.vue')
 
 const routes = [
-  { path: '/', redirect: '/resource-manage' },
-  { path: '/auto-schedule', name: 'AutoSchedule', component: AutoSchedule },
+  { path: '/section/', redirect: '/section/resource-manage' },
+  { path: '/section/auto-schedule', name: 'AutoSchedule', component: AutoSchedule },
   {
-    path: '/manual-adjust',
+    path: '/section/manual-adjust',
     name: 'ManualAdjust',
-    redirect: '/manual-adjust/teacher-request',
+    redirect: '/section/manual-adjust/teacher-request',
     children: [
       {
         path: 'teacher-request',
@@ -33,8 +33,8 @@ const routes = [
       }
     ]
   },
-  { path: '/resource-manage', name: 'ResourceManage', component: ResourceManage },
-  { path: '/result-query', name: 'ResultQuery', component: ResultQuery },
+  { path: '/section/resource-manage', name: 'ResourceManage', component: ResourceManage },
+  { path: '/section/result-query', name: 'ResultQuery', component: ResultQuery },
 ]
 
 export const sectionRouter = createRouter({
