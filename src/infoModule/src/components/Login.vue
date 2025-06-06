@@ -37,6 +37,7 @@
 import { ref } from 'vue';
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { userStore } from '../store/user.ts';
+import { useRoute, useRouter } from "vue-router";
 
 const credentials = ref({
   accountNumber: '',
@@ -46,6 +47,9 @@ const loading = ref(false);
 const loginFormRef = ref<FormInstance>();
 
 const UserStore = userStore();
+const router = useRouter(); // 获取 router 实例
+const route = useRoute(); // 获取当前路由信息
+
 
 const loginRules: FormRules = {
   accountNumber: [{ required: true, message: '请输入账号', trigger: 'blur' }],
@@ -65,6 +69,13 @@ const handleLogin = async () => {
       // 登录成功后的页面跳转由 Pinia store中的 login action 处理
       // 它会跳转到 redirectPath 或者 '/' (然后由路由配置重定向到 /login，这里需要注意)
       // 建议在 userStore.login 中，如果 redirectPath 是 '/' 或 '/login'，则默认跳转到一个已登录的页面，例如 '/information-manage'
+      const redirectPath = route.query.redirect as string;
+      if (redirectPath && redirectPath !== '/login' && redirectPath !== '/') {
+        router.push(redirectPath);
+      } else {
+        router.push('/'); // 默认跳转
+      }
+
     } else {
       // 如果 store 的 login action 返回更详细的错误信息，可以在此处显示
       ElMessage.error('登录失败，请检查您的账号和密码。');
