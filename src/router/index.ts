@@ -334,8 +334,7 @@ export const router = createRouter({
 });
 
 // 全局导航守卫
-// 参数from加下划线，标注为故意未使用
-router.beforeEach(async (to, _from, next) => {
+router.beforeEach(async (to, from, next) => {
   try {
     const uid = await getCurrentUserId();
     const utype = await getCurrentUserType();
@@ -346,16 +345,22 @@ router.beforeEach(async (to, _from, next) => {
 
     console.log("IsLoggedIn:" + isLoggedIn);
 
-    // 如果用户未登录，重定向到登录页
-    if (!isLoggedIn) {
-      return next({ path: '/login', query: { redirect: to.fullPath } });
-    }
-
     // 如果用户已登录且尝试访问登录页，则重定向到主页
-    if (to.path === '/login') {
+    if (isLoggedIn && to.path === '/login') {
       return next({ path: '/' });
     }
+    
+    // 如果用户未登录且访问的不是登录页，重定向到登录页
+    if (!isLoggedIn && to.path !== '/login') {
+      return next({ path: '/login'});
+    }
 
+    // 如果用户未登录且访问登录页，直接放行
+    if (!isLoggedIn && to.path === '/login') {
+      return next();
+    }
+
+    // 以下是已登录用户的权限检查逻辑
     // 检查用户类型权限
     const allowedRoles = to.matched
       .map(record => record.meta.allowedRoles)
@@ -365,7 +370,9 @@ router.beforeEach(async (to, _from, next) => {
     // 如果路由没有定义允许的角色，默认允许所有已登录用户访问
     if (allowedRoles.length === 0) {
       return next();
-    }    // 将meta中的小写角色转换为大写格式进行比较
+    }
+
+    // 将meta中的小写角色转换为大写格式进行比较
     const convertedRoles = allowedRoles.map((role: any) => {
       switch (role.toLowerCase()) {
         case 'admin':
@@ -386,7 +393,7 @@ router.beforeEach(async (to, _from, next) => {
       // 用户类型不匹配，重定向到主页或显示无权限页面
       console.warn(`用户类型 ${utype} 无权访问路由 ${to.path}`);
       window.alert(`您没有权限访问此页面: ${to.path}`);
-      return next({ path: _from.path });
+      return next({ path: from.path });
     }
 
   } catch (error) {
