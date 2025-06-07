@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Section from '../sectionModule/src/App.vue'
-import { userStore } from "../infoModule/src/store/user.ts";
 import { getCurrentUserId, getCurrentUserType } from '../infoModule/src/function/CurrentUser.ts';
 
 // Section Module imports
@@ -144,7 +143,7 @@ const routes = [
     //   { path: '', redirect: 'login' },
       {
         path: 'login',
-        name: 'Login',
+        name: 'TestingLogin',
         component: LoginView,
         meta: { requiresAuth: false } // 登录页不需要认证
       },
