@@ -20,10 +20,19 @@
     </aside>
 
     <main class="content">
-      <!-- ⭐ 顶栏，右上角用户模块 -->
+      <!-- ⭐ 顶栏，左侧回退按钮，右上角用户模块 -->
       <div class="top-bar">
+        <!-- 回退按钮 -->
+        <div class="back-button" @click="goToHome">
+          <svg class="back-icon" viewBox="0 0 1024 1024" width="16" height="16">
+            <path d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z" fill="#333"/>
+            <path d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z" fill="#333"/>
+          </svg>
+          <span>返回主页</span>
+        </div>
+
         <div class="user-area" @click="toggleDropdown">
-          <img src="https://i.pravatar.cc/40" alt="头像" class="avatar" />
+          <!-- <img src="https://i.pravatar.cc/40" alt="头像" class="avatar" /> -->
           <span class="username">{{ username }}</span>
           <svg class="arrow" viewBox="0 0 1024 1024" width="12" height="12">
             <path d="M512 672L192 352h640z" fill="#333" />
@@ -44,11 +53,32 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getCurrentUserName } from '../../infoModule/src/function/CurrentUser'
+import { userStore } from '../../infoModule/src/store/user'
+import { useRouter } from 'vue-router'
 
-const username = ref('管理员')  // 这里可以以后从后端接口动态拿到
+const username = ref('加载中...')  // 初始显示加载中
 const dropdownVisible = ref(false)
 const mainMenuOpen = ref(true)
+const router = useRouter()
+
+// 初始化用户信息
+const initUserInfo = async () => {
+  try {
+    const userName = await getCurrentUserName()
+    username.value = userName || '未知用户'
+    console.log('当前用户名:', userName)
+  } catch (error) {
+    console.error('获取用户名失败:', error)
+    username.value = '获取失败'
+  }
+}
+
+// 组件挂载时获取用户信息
+onMounted(() => {
+  initUserInfo()
+})
 
 // 点击头像区域切换下拉框
 const toggleDropdown = () => {
@@ -58,7 +88,13 @@ const toggleDropdown = () => {
 // 点击退出登录
 const logout = () => {
   alert('退出登录')
-  // 这里可以添加真正的退出逻辑，比如跳转到登录页
+  userStore().logout()
+  router.go(0);
+}
+
+// 回退到根目录
+const goToHome = () => {
+  window.location.href = 'http://localhost:5173/'
 }
 
 // 切换课程安排子系统菜单
@@ -136,12 +172,33 @@ const toggleMainMenu = () => {
   height: 60px;
   background-color: #ffffff;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0 30px;
   box-sizing: border-box;
   border-bottom: 1px solid #ddd;
   position: relative;
+}
+
+/* 回退按钮 */
+.back-button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+  color: #0d47a1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.back-button:hover {
+  background-color: #f0f4ff;
+}
+
+.back-icon {
+  margin-right: 6px;
 }
 
 /* 用户信息区域 */

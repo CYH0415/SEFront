@@ -229,7 +229,8 @@ function goToCourseList() {
 }
 
 .pagination-box {
-  margin-top: 30px;
+  margin-bottom: 20px;
+  margin-top: 20px;
   width: 100%;
   align-items: center;
   justify-content: center;

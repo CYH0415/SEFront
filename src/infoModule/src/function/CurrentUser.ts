@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../plugins/axios';
 
 async function getCurrentUserId() {
     const token = localStorage.getItem('token');

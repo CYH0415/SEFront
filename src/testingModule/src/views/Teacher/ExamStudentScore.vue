@@ -210,17 +210,17 @@ const goBack = () => {
   // Preserve original logic, but ensure route.params are defined if used
   if (isedit.value) {
     // This route seems to imply it's coming from an ended exam detail, adjust if needed
-    router.push('/teacher/exam-management'); // Fallback or more specific route
+    router.push('/testing/teacher/exam-management'); // Fallback or more specific route
   } else if (route.params.courseId && route.params.paperId) {
-    router.push(`/teacher/exams_detail/${route.params.courseId}/${route.params.paperId}`);
+    router.push(`/testing/teacher/exams_detail/${route.params.courseId}/${route.params.paperId}`);
   } else {
-    router.push('/teacher/exam-management'); // Default fallback
+    router.push('/testing/teacher/exam-management'); // Default fallback
   }
 };
 
 const gotoedit = (studentId) => {
   if (route.params.courseId && route.params.paperId && studentId !== undefined) {
-    router.push(`/teacher/exam-detail/student-exam-detail/${route.params.courseId}/${route.params.paperId}/${studentId}`);
+    router.push(`/testing/teacher/exam-detail/student-exam-detail/${route.params.courseId}/${route.params.paperId}/${studentId}`);
   } else {
     alert("无法获取足够信息以修改学生详情。");
   }

@@ -2,12 +2,11 @@
   <div class="resource-manage">
     <div class="header">
       <h1>教学资源管理</h1>
-      <div class="search-actions">
-        <el-input
+      <div class="search-actions">        <el-input
           v-model="searchId"
-          placeholder="请输入教室相关信息"
+          placeholder="请输入校区、楼宇、房间号或教室类型"
           clearable
-          style="width: 200px"
+          style="width: 250px"
         />
         <el-button type="primary" @click="handleSearch">搜索</el-button>
         <el-button @click="handleReset">重置</el-button>
@@ -24,6 +23,7 @@
         <el-table-column prop="campus" label="校区" />
         <el-table-column prop="building" label="楼宇" />
         <el-table-column prop="roomNumber" label="房间号" />
+        <el-table-column prop="type" label="教室类型" />
         <el-table-column prop="capacity" label="容量" />
         <el-table-column label="操作" width="220">
           <template #default="scope">
@@ -32,9 +32,7 @@
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
-
-    <!-- 添加 / 修改教室弹窗 -->
+    </el-card>    <!-- 添加 / 修改教室弹窗 -->
     <el-dialog v-model="dialogVisible" :title="isEditing ? '修改教室' : '添加教室'" width="500px">
       <el-form :model="form" label-width="80px">
         <el-form-item label="校区">
@@ -45,6 +43,8 @@
         </el-form-item>
         <el-form-item label="房间号">
           <el-input v-model="form.roomNumber" type="number" :disabled="isEditing" />
+        </el-form-item>        <el-form-item label="教室类型">
+          <el-input v-model="form.type" placeholder="请输入教室类型" />
         </el-form-item>
         <el-form-item label="容量">
           <el-input v-model="form.capacity" type="number" />
@@ -69,6 +69,7 @@ interface Classroom {
   campus: string;
   building: string;
   roomNumber: number;
+  type: string;
   capacity: number;
 }
 
@@ -79,6 +80,7 @@ const form = ref<Classroom>({
   campus: '',
   building: '',
   roomNumber: 0,
+  type: '',
   capacity: 0
 });
 
@@ -91,7 +93,7 @@ console.log('当前用户信息:', { curUid, curUType })
 const searchId = ref('');
 const filteredClassroomList = computed(() =>
   classroomList.value.filter(c =>
-    `${c.campus}${c.building}${c.roomNumber}`.includes(searchId.value)
+    `${c.campus}${c.building}${c.roomNumber}${c.type}`.includes(searchId.value)
   )
 );
 
@@ -132,6 +134,7 @@ const openAddDialog = () => {
     campus: '',
     building: '',
     roomNumber: 0,
+    type: '',
     capacity: 0
   };
   dialogVisible.value = true;
@@ -144,8 +147,8 @@ const openEditDialog = (item: Classroom) => {
 };
 
 const saveClassroom = async () => {
-  const { classroomId, campus, building, roomNumber, capacity } = form.value;
-  if (!campus || !building || !roomNumber || !capacity) {
+  const { classroomId, campus, building, roomNumber, type, capacity } = form.value;
+  if (!campus || !building || !roomNumber || !type || !capacity) {
     ElMessage.warning('请填写完整信息');
     return;
   }
@@ -155,8 +158,9 @@ const saveClassroom = async () => {
       await request.put('/classroom/modify', {
         classroomId,
         newCampus: campus,
-        newCapacity: capacity,
-        newBuilding: building
+        newBuilding: building,
+        newType: type,
+        newCapacity: capacity
       });
       ElMessage.success('修改成功');
     } else {
@@ -164,6 +168,7 @@ const saveClassroom = async () => {
         campus,
         building,
         roomNumber,
+        type,
         capacity
       });
       ElMessage.success('添加成功');

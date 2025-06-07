@@ -29,7 +29,7 @@
             <el-button
               type="primary"
               size="large"
-              :icon="uploading ? '' : 'UploadFilled'"
+              :icon="uploading ? '' : UploadFilled"
               :loading="uploading"
             >
               {{ uploading ? '上传中...' : '上传文件' }}
@@ -96,6 +96,7 @@
 import { ElMessage } from 'element-plus';
 import { ref, watch, computed, defineProps, defineEmits } from 'vue';
 import api from '../api/api';
+import { UploadFilled } from '@element-plus/icons-vue';
 
 // props
 const props = defineProps({
