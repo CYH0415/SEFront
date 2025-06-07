@@ -25,16 +25,15 @@
           <template #default="scope">
             {{ scope.row.semester }} {{ scope.row.year }}
           </template>
-        </el-table-column>
-        <el-table-column label="当前教室" width="200" align="center">
+        </el-table-column>        <el-table-column label="当前教室" width="250" align="center">
           <template #default="scope">
-            <div v-if="scope.row.classroom" style="text-align: center">
+            <div style="text-align: center">
               <div><strong>ID:</strong> {{ scope.row.classroomId }}</div>
-              <div><strong>位置:</strong> {{ scope.row.classroom.campus }}-{{ scope.row.classroom.building }}-{{ scope.row.classroom.roomNumber }}</div>
-              <div><strong>容量:</strong> {{ scope.row.classroom.capacity }}</div>
-            </div>
-            <div v-else style="text-align: center">
-              教室ID: {{ scope.row.classroomId }}
+              <div v-if="scope.row.classroomLocation"><strong>位置:</strong> {{ scope.row.classroomLocation }}</div>
+              <div v-else-if="scope.row.classroomCampus && scope.row.classroomBuilding && scope.row.roomNumber">
+                <strong>位置:</strong> {{ scope.row.classroomCampus }}-{{ scope.row.classroomBuilding }}-{{ scope.row.roomNumber }}
+              </div>
+              <div v-if="scope.row.classroom && scope.row.classroom.capacity"><strong>容量:</strong> {{ scope.row.classroom.capacity }}</div>
             </div>
           </template>
         </el-table-column>

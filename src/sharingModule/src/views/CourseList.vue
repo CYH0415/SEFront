@@ -24,7 +24,7 @@
           <el-table-column prop="year" label="学年" width="75"/>
           <el-table-column prop="semester" label="学期" width="75"/>
           <el-table-column prop="time" label="上课时间" width="200"/>
-          <el-table-column prop="teacherName" label="教师" width="100" />
+          <el-table-column prop="teacherName" label="教师" width="200" />
         </el-table>
       </div>
 
@@ -169,5 +169,11 @@ h1 {
   display: flex;
   justify-content: center;
   width: 100%;
+}
+
+.header {
+  display: flex;
+  flex-direction: column; /* 让元素垂直排列 */
+  align-items: flex-start; /* 可选：让它们左对齐 */
 }
 </style>
