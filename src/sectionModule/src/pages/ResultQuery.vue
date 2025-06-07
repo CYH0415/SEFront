@@ -72,7 +72,7 @@ onMounted(async () => {
   try {
     currentUserId.value = await getCurrentUserId()
     currentUserType.value = await getCurrentUserType()
-    isAdmin.value = currentUserType.value === 'admin'
+    isAdmin.value = currentUserType.value === 'ROLE_ADMIN'
     
     console.log('当前用户信息:', { 
       userId: currentUserId.value, 

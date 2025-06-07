@@ -7,6 +7,31 @@
     </aside>
 
     <main class="content">
+      <!-- ⭐ 顶栏，左侧回退按钮，右上角用户模块 -->
+      <div class="top-bar">
+        <!-- 回退按钮 -->
+        <div class="back-button" @click="goToHome">
+          <svg class="back-icon" viewBox="0 0 1024 1024" width="16" height="16">
+            <path d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z" fill="#333"/>
+            <path d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z" fill="#333"/>
+          </svg>
+          <span>返回主页</span>
+        </div>
+
+        <div class="user-area" @click="toggleDropdown">
+          <!-- <img src="https://i.pravatar.cc/40" alt="头像" class="avatar" /> -->
+          <span class="username">{{ username }}</span>
+          <svg class="arrow" viewBox="0 0 1024 1024" width="12" height="12">
+            <path d="M512 672L192 352h640z" fill="#333" />
+          </svg>
+        </div>
+
+        <!-- 下拉菜单 -->
+        <div v-if="dropdownVisible" class="dropdown-menu">
+          <div class="dropdown-item" @click="logout">退出登录</div>
+        </div>
+      </div>
+
       <div class="page-container">
         <router-view :userId = "Number(userId)" :isStudent = "Boolean(isStudent)" v-if="isReady"></router-view>
       </div>
@@ -16,14 +41,31 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import { getCurrentUserId, getCurrentUserType } from '../../infoModule/src/function/CurrentUser';
+import { getCurrentUserId, getCurrentUserType, getCurrentUserName } from '../../infoModule/src/function/CurrentUser';
+import { userStore } from '../../infoModule/src/store/user'
 
 const isStudent = ref(false);
 const userId = ref(2);
 const isReady = ref(false);
 
+const username = ref('加载中...')  // 初始显示加载中
+const dropdownVisible = ref(false)
+
+// 初始化用户信息
+const initUserInfo = async () => {
+  try {
+    const userName = await getCurrentUserName()
+    username.value = userName || '未知用户'
+    console.log('当前用户名:', userName)
+  } catch (error) {
+    console.error('获取用户名失败:', error)
+    username.value = '获取失败'
+  }
+}
+
 onMounted(async() => {
   try{
+    initUserInfo();
     const type = await getCurrentUserType();
     isStudent.value = (type == 'ROLE_STUDENT');
     userId.value = await getCurrentUserId();
@@ -32,6 +74,23 @@ onMounted(async() => {
     console.log(e);
   }
 });
+
+// 点击头像区域切换下拉框
+const toggleDropdown = () => {
+  dropdownVisible.value = !dropdownVisible.value
+}
+
+// 点击退出登录
+const logout = () => {
+  alert('退出登录')
+  userStore().logout()
+  router.go(0);
+}
+
+// 回退到根目录
+const goToHome = () => {
+  window.location.href = 'http://localhost:5173/'
+}
 </script>
 
 <style scoped>
@@ -103,12 +162,33 @@ onMounted(async() => {
   height: 60px;
   background-color: #ffffff;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0 30px;
   box-sizing: border-box;
   border-bottom: 1px solid #ddd;
   position: relative;
+}
+
+/* 回退按钮 */
+.back-button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+  color: #0d47a1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.back-button:hover {
+  background-color: #f0f4ff;
+}
+
+.back-icon {
+  margin-right: 6px;
 }
 
 /* 用户信息区域 */
@@ -210,4 +290,83 @@ button:hover, .el-button:hover {
   color: white;
   font-weight: bold;
 }
+
+.submenu-group {
+  margin-bottom: 20px;
+}
+
+.submenu-title {
+  font-weight: bold;
+  margin: 10px 0 5px;
+  padding-left: 4px;
+  font-size: 15px;
+  color: #f0f0f0;
+}
+
+.submenu-group a {
+  padding-left: 20px;
+  font-size: 14px;
+}
+
+.menu-group {
+  margin-bottom: 15px;
+}
+
+.menu-title {
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.menu-title:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.submenu {
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.submenu a {
+  font-size: 14px;
+  margin: 4px 0;
+  padding: 6px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: white;
+}
+
+.submenu a.router-link-active {
+  font-weight: bold;
+  border-left: 3px solid white;
+  padding-left: 7px;
+}
+
+.arrow-icon {
+  margin-left: auto;
+  font-size: 12px;
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.arrow-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+  height: 0;
+}
+
 </style>
