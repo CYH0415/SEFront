@@ -2,22 +2,27 @@
   <div class="teacher-review">
     <el-card>
       <h2>教师申请审核</h2>      <el-table :data="applications" style="width: 100%" v-loading="loading" border>
-        <el-table-column prop="appId" label="申请ID" width="80" />
-        <el-table-column prop="secId" label="Section ID" width="100" />
-        <el-table-column prop="teacherId" label="教师 ID" width="80" />
+        <el-table-column prop="appId" label="申请ID" width="80" />        <el-table-column prop="secId" label="Section ID" width="100" />
+        <el-table-column label="教师信息" width="150">
+          <template #default="scope">
+            <div>
+              <div><strong>姓名:</strong> {{ scope.row.teacherName }}</div>
+              <div><strong>ID:</strong> {{ scope.row.teacherId }}</div>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="课程信息" width="200">
           <template #default="scope">
             <div>
-              <div><strong>课程ID:</strong> {{ scope.row.section?.courseId }}</div>
-              <div><strong>学期:</strong> {{ scope.row.section?.semester }} {{ scope.row.section?.year }}</div>
+              <div><strong>课程:</strong> {{ scope.row.courseTitle }}</div>
+              <div><strong>学期:</strong> {{ scope.row.semester }} {{ scope.row.year }}</div>
             </div>
           </template>
         </el-table-column>
         <el-table-column label="教室信息" width="250">
           <template #default="scope">
-            <div v-if="scope.row.section?.classroom">
-              <div><strong>教室:</strong> {{ scope.row.section.classroom.campus }}-{{ scope.row.section.classroom.building }}-{{ scope.row.section.classroom.roomNumber }}</div>
-              <div><strong>类型:</strong> {{ scope.row.section.classroom.type }} (容量: {{ scope.row.section.classroom.capacity }})</div>
+            <div>
+              <div><strong>教室:</strong> {{ scope.row.classroomLocation }}</div>
             </div>
           </template>
         </el-table-column>
@@ -38,7 +43,13 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="adminId" label="管理员ID" width="100" />        <el-table-column label="操作" width="200">
+        <el-table-column label="管理员信息" width="120">
+          <template #default="scope">
+            <div v-if="scope.row.adminId">
+              <div><strong>ID:</strong> {{ scope.row.adminId }}</div>
+            </div>
+          </template>
+        </el-table-column><el-table-column label="操作" width="200">
           <template #default="scope">
             <el-button 
               type="success" 
