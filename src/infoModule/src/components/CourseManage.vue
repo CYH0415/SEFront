@@ -79,7 +79,7 @@
 import "../assets/pages_styles.css";
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import axios from 'axios'
+import axios from '../plugins/axios.ts';
 
 // 导入相关DTO
 interface CourseDTO {

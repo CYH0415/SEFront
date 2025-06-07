@@ -82,7 +82,7 @@
 import "../assets/pages_styles.css";
 import { ref, computed, onMounted } from 'vue';
 import * as echarts from 'echarts';
-import axios from 'axios';
+import axios from '../plugins/axios.ts';
 
 // 定义GradeAnalyzeDTO相关接口
 interface StudentRankDTO {
