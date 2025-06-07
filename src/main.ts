@@ -4,6 +4,13 @@ import { createApp } from 'vue'
 import App from './App.vue' // 假设您的根组件是 App.vue
 import { router } from './router' // 导入全局路由
 import './style.css' // 导入您的全局样式
+import { createPinia } from 'pinia'  // 引入 Pinia
+import ElementPlus from 'element-plus' // 引入 Element Plus
+import 'element-plus/dist/index.css' // 引入样式
+
+// 创建 Pinia 实例
+const pinia = createPinia()
+const app = createApp(App)
 
 // --- 开发环境默认登录用户 ---
 // 这个 'if' 判断语句确保以下代码只在开发模式下运行，
@@ -24,19 +31,19 @@ if (import.meta.env.DEV) {
     };
 
     // 为了避免每次刷新都覆盖，可以检查token是否存在
-    if (!localStorage.getItem('userToken')) {
-        localStorage.setItem('userToken', defaultUser.token);
+    if (!localStorage.getItem('token')) {
+        localStorage.setItem('token', defaultUser.token);
         localStorage.setItem('userRole', defaultUser.role);
         localStorage.setItem('username', defaultUser.username);
         // 您的 App.vue 从一个 'user' 对象里读取 userId，我们也模拟这个结构
         localStorage.setItem('user', JSON.stringify({ userId: defaultUser.userId }));
     }
+
 }
 // --- 默认登录用户设置结束 ---
 
-
-const app = createApp(App)
-
+app.use(pinia)
 app.use(router)
+app.use(ElementPlus)
 
 app.mount('#app')
