@@ -125,7 +125,7 @@ onMounted(async () => {
 
   if (isNaN(paperId) || isNaN(courseId) || isNaN(studentId)) {
     alert('页面参数无效！');
-    router.push('/teacher/exam-management'); // Or appropriate fallback
+    router.push('/testing/teacher/exam-management'); // Or appropriate fallback
     isLoading.value = false;
     return;
   }
@@ -301,7 +301,7 @@ const goBack = () => {
   // if (isedit.value) router.push('/teacher/endedexam-detail'); // This route seems specific and not general
   // else if (route.params.courseId && route.params.paperId) router.push(`/teacher/exams_detail/${route.params.courseId}/${route.params.paperId}`);
   // Fallback to a more general list:
-  router.push('/teacher/exam-management');
+  router.push('/testing/teacher/exam-management');
 };
 
 const intoStudentScore = () => {

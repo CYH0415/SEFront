@@ -246,7 +246,7 @@ const clearSearch = () => {
 };
 
 const viewDetails = (result) => {
-  router.push(`/student/result/${result.courseId}/${result.paperId}/${result.studentId}/details`);
+  router.push(`/testing/student/result/${result.courseId}/${result.paperId}/${result.studentId}/details`);
 };
 </script>
 

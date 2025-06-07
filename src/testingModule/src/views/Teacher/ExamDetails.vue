@@ -222,7 +222,7 @@ onMounted(async () => {
 
   if (isNaN(paperIdParam) || isNaN(courseIdParam)) {
     alert('无效的考试ID或课程ID');
-    router.push('/teacher/exam-management');
+    router.push('/testing/teacher/exam-management');
     isLoading.value = false;
     return;
   }
@@ -335,11 +335,11 @@ const formatDate = (dateString) => {
 };
 
 const goBack = () => {
-  router.push('/teacher/exam-management');
+  router.push('/testing/teacher/exam-management');
 };
 const intoStudentScore = () => {
   if (paperInfo.value) {
-    router.push(`/teacher/exam-details-student-score/${paperInfo.value.courseId}/${paperInfo.value.paperId}`);
+    router.push(`/testing/teacher/exam-details-student-score/${paperInfo.value.courseId}/${paperInfo.value.paperId}`);
   } else {
     alert("无法获取试卷信息，无法跳转。");
   }

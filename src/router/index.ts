@@ -142,28 +142,134 @@ const routes = [
     component: TestingApp,
     children: [
     //   { path: '', redirect: 'login' },
-      { path: 'login', name: 'TestingLogin', component: LoginView },
-      // Student routes
-      { path: 'student/dashboard', name: 'StudentHome', component: StudentDashboard },
-      { path: 'student/results', name: 'StudentResultList', component: StudentResults },
-      { path: 'student/exam/:examId', name: 'StudentExamDetail', component: StudentExamDetail },
-      { path: 'student/exam/:examId/questions', name: 'StudentExamQuestions', component: StudentExamQuestions },
-      { path: 'student/past-papers', name: 'StudentPastPapers', component: StudentPastPapers },
-      { path: 'student/result/:resultId', name: 'StudentResultDetail', component: StudentResultDetail },
-      { path: 'student/past-paper/:paperId', name: 'StudentPastPaperDetail', component: StudentPastPaperDetail },
-      // Teacher routes
-      { path: 'teacher/dashboard', name: 'TeacherHome', component: TeacherDashboard },
-      { path: 'teacher/question-bank', name: 'QuestionBank', component: QuestionBank },
-      { path: 'teacher/create-paper', name: 'CreatePaper', component: CreatePaper },
-      { path: 'teacher/create-paper/manual', name: 'ManualCreatePaper', component: ManualCreatePaper },
-      { path: 'teacher/create-paper/auto', name: 'AutoCreatePaper', component: AutoCreatePaper },
-      { path: 'teacher/past-papers', name: 'TeacherPastPapers', component: TeacherPastPapers },
-      { path: 'teacher/exam-management', name: 'ExamManagement', component: ExamManagement },
-      { path: 'teacher/exam/:examId', name: 'TeacherExamDetail', component: ExamDetail },
-      { path: 'teacher/exam/:examId/scores', name: 'StudentsScores', component: StudentsScores },
-      { path: 'teacher/result/:resultId', name: 'TeacherResultDetail', component: TeacherResultDetail },
-      { path: 'teacher/endedexam-detail', name: 'TeacherEndExam', component: TeacherEndExam },
-      { path: 'teacher/past-paper/:paperId', name: 'TeacherPastPaperDetail', component: TeacherPastPaperDetail }
+      {
+        path: 'login',
+        name: 'Login',
+        component: LoginView,
+        meta: { requiresAuth: false } // 登录页不需要认证
+      },
+      // 学生路由
+      {
+        path: 'student/dashboard',
+        name: 'StudentHome',
+        component: StudentDashboard,
+        meta: { requiresAuth: true, role: 'student' }
+      },
+      {
+        path: 'student/results',
+        name: 'StudentResultList',
+        component: StudentResults,
+        meta: { requiresAuth: true, role: 'student' }
+      },
+      {
+        path: 'student/past-papers',
+        name: 'StudentPastPaperList',
+        component: StudentPastPapers,
+        meta: { requiresAuth: true, role: 'student' }
+      },
+      {
+        path: 'student/exam/:id/detail',
+        name: 'StudentExamDetail',
+        component: StudentExamDetail,
+        meta: { requiresAuth: true, role: 'student' }
+      },
+      {
+        path: 'student/exam/:courseId/:paperId',
+        name: 'StudentExamQuestions',
+        component: StudentExamQuestions,
+        meta: { requiresAuth: true, role: 'student' }
+      },
+      {
+        path: 'student/result/:courseId/:paperId/:studentId/details',
+        name: 'StudentResultDetails',
+        component: StudentResultDetail,
+        meta: { requiresAuth: true, role: 'student' }
+      },
+      {
+        path: 'student/past-paper/:courseId/:paperId/details',
+        name: 'StudentPastPaperDetails',
+        component: StudentPastPaperDetail,
+        meta: { requiresAuth: true, role: 'student' }
+      },
+      // 教师路由
+      {
+        path: 'teacher/dashboard',
+        name: 'TeacherHome',
+        component: TeacherDashboard,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/question-bank',
+        name: 'QuestionBank',
+        component: QuestionBank,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path:'teacher/exams_detail/:courseId/:paperId',
+        name: 'TeacherExamDetails',
+        component: ExamDetail,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/create-paper',
+        name: 'CreatePaper',
+        component: CreatePaper,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/create-paper/manual',
+        name: 'ManualCreatePaper',
+        component: ManualCreatePaper,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/create-paper/manual-edit/:courseId/:paperId',
+        name: 'ManualCreatePaperEdit',
+        component: ManualCreatePaper,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/create-paper/auto',
+        name: 'AutoCreatePaper',
+        component: AutoCreatePaper,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/past-papers',
+        name: 'TeacherPastPapers',
+        component: TeacherPastPapers,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/exam-management',
+        name: 'ExamManagement',
+        component: ExamManagement,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/exam-details-student-score/:courseId/:paperId',
+        name: 'StudentsScores',
+        component: StudentsScores,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/past-paper/:courseId/:paperId/details',
+        name: 'TeacherPastPaperDetails',
+        component: TeacherPastPaperDetail,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/exam-detail/student-exam-detail/:courseId/:paperId/:studentId',
+        name: 'TeacherResultDetail',
+        component: TeacherResultDetail,
+        meta: { requiresAuth: true, role: 'teacher' }
+      },
+      {
+        path: 'teacher/endedexam-detail',
+        name: 'EndedExamDetail',
+        component: TeacherEndExam,
+        meta: { requiresAuth: true, role: 'teacher' }
+      }
     ]
   },
   // Sharing Module routes

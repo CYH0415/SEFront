@@ -506,7 +506,7 @@ async function confirmPublish() {
       confirmedQuestions.value = [];
       // examSettings are kept from localStorage for next time
 
-      router.push('/teacher/exam-management');
+      router.push('/testing/teacher/exam-management');
     } catch (error) {
       console.error('发布试卷失败:', error);
       alert(`发布试卷失败: ${error.message}`);

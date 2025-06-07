@@ -25,11 +25,11 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const goToManualPaper = () => {
-  router.push('/teacher/create-paper/manual')
+  router.push('/testing/teacher/create-paper/manual')
 }
 
 const goToAutoPaper = () => {
-  router.push('/teacher/create-paper/auto')
+  router.push('/testing/teacher/create-paper/auto')
 }
 </script>
 

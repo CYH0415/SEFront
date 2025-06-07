@@ -489,7 +489,7 @@ const Create_Exam_Paper = async (requestData) => {
 
     resetPaperForm();
     isEditMode.value = false;
-    router.push('/teacher/exam-management');
+    router.push('/testing/teacher/exam-management');
   } catch (error) {
     console.error(`创建/修改试卷失败:`, error);
     alert(`创建/修改试卷失败: ${error.message}`);
@@ -689,11 +689,11 @@ const cancelPaperCreation = () => {
         examSettings.value.fullScore = 0;
       }
       isEditMode.value = false;
-      router.push('/teacher/dashboard');
+      router.push('/testing/teacher/dashboard');
     }
   } else {
     isEditMode.value = false;
-    router.push('/teacher/dashboard');
+    router.push('/testing/teacher/dashboard');
   }
 }
 </script>

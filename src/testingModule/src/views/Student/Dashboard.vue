@@ -267,7 +267,7 @@ const isExamOngoing = (exam) => {
 
 const goToConcreteExam = (exam) => { // Renamed from viewExamDetails for clarity
   if (isExamOngoing(exam)) {
-    router.push(`/student/exam/${exam.courseId}/${exam.paperId}`);
+    router.push(`/testing/student/exam/${exam.courseId}/${exam.paperId}`);
   } else {
     // This case should ideally be handled by disabling the button
     alert(isExamEnded(exam) ? '本次考试已结束。' : '考试尚未开始，请在指定时间进入。');
