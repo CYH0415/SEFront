@@ -9,7 +9,13 @@
           style="width: 140px" 
           clearable 
         />
-        <el-input v-model="filters.classroomId" placeholder="教室ID" style="width: 140px" clearable />
+        <el-input 
+          v-if="isAdmin" 
+          v-model="filters.classroomId" 
+          placeholder="教室ID" 
+          style="width: 140px" 
+          clearable 
+        />
         <el-input-number v-model="filters.year" :min="2000" :max="2100" placeholder="学年" style="width: 120px" />
         <el-select v-model="filters.semester" placeholder="学期" style="width: 120px">
           <el-option label="Spring" value="Spring" />
@@ -114,16 +120,23 @@ const handleSearch = async () => {
       return
     }
   }
-  
-  try {
-    const res = await request.get('/search/section', {
-      params: {
-        teacherId: filters.teacherId || undefined,
-        classroomId: filters.classroomId || undefined,
-        year: filters.year,
-        semester: filters.semester
-      }
-    })
+    try {
+    const params: any = {
+      year: filters.year,
+      semester: filters.semester
+    }
+    
+    // 根据用户类型设置不同的查询参数
+    if (isAdmin.value) {
+      // 管理员可以查询教师ID或教室ID
+      if (filters.teacherId) params.teacherId = filters.teacherId
+      if (filters.classroomId) params.classroomId = filters.classroomId
+    } else {
+      // 教师只能查询自己的课程，使用当前用户ID
+      params.teacherId = filters.teacherId
+    }
+    
+    const res = await request.get('/search/section', { params })
     buildCourseMap(res.data.data || [])
   } catch (err) {
     ElMessage.error('查询失败')
