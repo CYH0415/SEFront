@@ -52,10 +52,13 @@
       v-model="isAppendVisible"
       width="400px"
     >
+    <div class="radio-header">
       <el-radio-group v-model="createType">
         <el-radio value="folder">文件夹</el-radio>
         <el-radio value="file">文件</el-radio>
       </el-radio-group>
+    </div>
+      
       <div style="width: 60%; margin: 0 auto;">
         <el-input
           v-if="createType === 'folder'"
@@ -65,12 +68,14 @@
         />
       </div>
 
-      <div v-if="createType === 'file'" style="margin: 10px">
-
-        <el-button style="height: 75px; width: 250px; font-size: 18px; padding: 0 30px;" @click="() => isSelectVisible = true">
-          <el-icon color="black" style="margin-right: 10px;"><Files /></el-icon>
-          选择文件
-        </el-button>
+      <div v-if="createType === 'file'" style="margin: 10px;">
+        <div style="display: flex; justify-content: center;">
+          <el-button style="height: 75px; width: 250px; font-size: 18px; padding: 0 30px;" @click="() => isSelectVisible = true">
+            <el-icon color="black" style="margin-right: 10px;"><Files /></el-icon>
+            选择文件
+          </el-button>
+        </div>
+        
 
         <!-- 选中文件列表 -->
         <div v-if="selectedFiles.length > 0" style="max-height: 180px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
@@ -111,7 +116,7 @@
 
     <!-- 删除确认 弹窗 -->
     <el-dialog
-      title="Confirm Deletion"
+      title="删除文件"
       v-model="isDeleteVisible"
       width="400px"
     >
@@ -127,6 +132,7 @@
 </template>
 
 <script setup>
+import { Files } from '@element-plus/icons-vue';
 import api from '../api/api';
 import downloadApi from '../api/downloadApi';
 import { ElMessage } from 'element-plus';
@@ -365,4 +371,9 @@ h2 {
   margin-bottom: 0 !important;
 }
 
+.radio-header {
+  display: flex !important;
+  justify-content: center !important;
+  margin-bottom: 15px;
+}
 </style>
