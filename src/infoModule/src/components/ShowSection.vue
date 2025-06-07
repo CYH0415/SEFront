@@ -68,17 +68,5 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-}
 
-.el-input {
-  margin-left: 10px;
-  width: 250px; /* 根据需要调整 */
-}
-
-.el-card {
-  margin-top: 20px;
-}
 </style>
