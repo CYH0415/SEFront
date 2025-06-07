@@ -56,7 +56,12 @@
       </table>
       <button class="print-btn" @click="printTimetable">打印选课结果</button>
     </div>
+    <div v-if="isModalVisible" class="modal-overlay" @click="closeModal">
+    </div>
+
+
   </div>
+
 </template>
 
 <script>
@@ -77,6 +82,7 @@ export default {
       currentSemester: '', // 示例: 当前学期
       searchedYear: '',
       searchedSemester: '',
+      isModalVisible: false,
       // 如果您决定保留 searchResult 用于显示特定信息，请在这里定义
       // searchResult: '',
     };
@@ -133,7 +139,7 @@ export default {
       this.fetchCourseResults();
     },
     async fetchCourseResults() {
-      this.$router.push({ name: 'CourseResultT', params: { userId: this.teacherId } });
+
       this.isLoading = true;
       this.initialLoad = false;
       this.courses = []; // 清空旧数据
@@ -198,36 +204,24 @@ export default {
         alert("请指定学年和学期，再打印课表。");
         return;
       }
-      this.$router.push({ name: 'CourseResultT', params: { userId: this.teacherId } });
+
       this.isLoadingPrint = true;
+
       try {
         const backendSearchSemesterForTimetable = this.getBackendSemester(this.searchedSemester);
-
         const queryParams = new URLSearchParams({
           year: this.searchedYear,
           semester: backendSearchSemesterForTimetable,
         });
+
         const response = await fetch(`http://localhost:8083/teacher/${this.teacherId}/timetable?${queryParams}`);
 
-        // ... 后续逻辑保持不变 ...
-
         if (!response.ok) {
-          let errorDetail = `请求课表数据失败，状态码: ${response.status} ${response.statusText}`;
-          try {
-            const errorText = await response.text();
-            const briefErrorText = errorText.length > 300 ? errorText.substring(0, 300) + "..." : errorText;
-            console.error('服务器错误响应体 (课表):', briefErrorText);
-            if (errorText.toLowerCase().includes("<!doctype html")) {
-              errorDetail += " (服务器返回了HTML页面)";
-            } else {
-              errorDetail += ` - ${briefErrorText}`;
-            }
-          } catch (e) {/*ignore*/ }
-          throw new Error(errorDetail);
+          // ... 错误处理逻辑保持不变 ...
+          throw new Error(`请求课表数据失败`);
         }
 
         const timetableApiResponseData = await response.json();
-
         if (timetableApiResponseData.errorMessage) {
           alert(`准备课表数据时出错: ${timetableApiResponseData.errorMessage}`);
           this.isLoadingPrint = false;
@@ -235,115 +229,268 @@ export default {
         }
         const timetableData = timetableApiResponseData.timetable;
 
-        // ... （后续生成HTML和打印的逻辑不变） ...
+        // --- 核心修改开始 ---
+
+        // 1. 定义课表数据和基本结构
         const daysOrder = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
         const periods = [
-          "08:00-08:50",
-          "09:00-09:50",
-          "10:00-10:50",
-          "11:00-11:50",
-          "13:00-13:50",
-          "14:00-14:50",
-          "15:00-15:50",
-          "16:00-16:50"
+          "08:00-08:50", "09:00-09:50", "10:00-10:50", "11:00-11:50",
+          "13:00-13:50", "14:00-14:50", "15:00-15:50", "16:00-16:50",
+          "17:00-17:50", "19:00-19:50", "20:00-20:50", "21:00-21:50"
         ];
         const periodMap = {
-          "第08:00-08:50节": "08:00-08:50",
-          "第09:00-09:50节": "09:00-09:50", // 假设这两节课都属于 "第1-2节"
-
-          "第10:00-10:50节": "10:00-10:50",
-          "第11:00-11:50节": "11:00-11:50",
-
-          "第13:00-13:50节": "13:00-13:50", // 后端返回这个
-          "第14:00-14:50节": "14:00-14:50", // 后端返回这个
-
-          "第15:00-15:50节": "15:00-15:50", // 后端返回这个
-          "第16:00-16:50节": "16:00-16:50",
+          "第08:00-08:50节": "08:00-08:50", "第09:00-09:50节": "09:00-09:50",
+          "第10:00-10:50节": "10:00-10:50", "第11:00-11:50节": "11:00-11:50",
+          "第13:00-13:50节": "13:00-13:50", "第14:00-14:50节": "14:00-14:50",
+          "第15:00-15:50节": "15:00-15:50", "第16:00-16:50节": "16:00-16:50",
+          "第17:00-17:50节": "17:00-17:50", "第19:00-19:50节": "19:00-19:50",
+          "第20:00-20:50节": "20:00-20:50", "第21:00-21:50节": "21:00-21:50"
         };
 
+        // 2. 动态生成表格HTML
         let timetableHtml = `
-          <h2>${this.searchedYear}学年 ${this.searchedSemester}学期 教师课表</h2>
-          <table border="1" style="border-collapse:collapse; width:100%; font-size:12px; text-align:center;">
-            <thead>
-              <tr>
-                <th style="padding:5px;">时间/星期</th>`;
-        daysOrder.forEach(day => {
-          timetableHtml += `<th style="padding:5px;">${day}</th>`;
-        });
-        timetableHtml += `</tr></thead><tbody>`;
-        periods.forEach(period => {
-          timetableHtml += `<tr><td style="padding:5px; white-space: nowrap;">${period}</td>`;
-          daysOrder.forEach(day => {
-            let cellContent = "";
-            if (timetableData && timetableData[day]) {
-              const entriesForDay = timetableData[day];
-              const entry = entriesForDay.find(e => periodMap[e.period] === period);
-              if (entry) {
-                // 修改 cellContent 来包含选课人数
-                cellContent = `${entry.courseName}<br/>@${entry.location}<br/>人数: ${entry.studentCount}`;
-              }
+      <div class="timetable-container">
+        <div class="timetable-header">
+            <h2>${this.searchedYear}学年 ${this.searchedSemester}学期 教师课表</h2>
+        </div>
+        <div class="table-wrapper">
+            <table class="timetable-table">
+                <thead>
+                    <tr>
+                        <th>时间段</th>
+                        ${daysOrder.map(day => `<th>${day}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${periods.map(period => `
+                        <tr>
+                            <td class="time-cell">${period}</td>
+                            ${daysOrder.map(day => {
+          let cellContent = "";
+          if (timetableData && timetableData[day]) {
+            const entry = timetableData[day].find(e => periodMap[e.period] === period);
+            if (entry) {
+              cellContent = `
+                                            <div class="course-cell">
+                                                <div class="course-name ellipsis">${entry.courseName}</div>
+                                                <div class="course-location ellipsis">@${entry.location}</div>
+                                                <div class="course-location ellipsis">人数: ${entry.studentCount}</div>
+                                            </div>`;
             }
-            timetableHtml += `<td style="padding:5px; min-height: 60px; vertical-align: top;">${cellContent}</td>`; // 可能需要调整 min-height
-          });
-          timetableHtml += `</tr>`;
-        });
-        timetableHtml += `</tbody></table>
-          <p style="font-size:10px; text-align:center; margin-top:10px;">打印时间: ${new Date().toLocaleString()}</p>`;
-
-        const printIframe = document.createElement('iframe');
-        printIframe.style.display = 'none';
-        document.body.appendChild(printIframe);
-        const iframeDoc = printIframe.contentDocument || printIframe.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc.write(`<html><head><title>教师课表</title><style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; font-size: 12px; } th, td { border: 1px solid #ccc; padding: 5px; text-align: center; vertical-align: top; } th { background-color: #f2f2f2; } h2 { text-align: center; }</style></head><body>${timetableHtml}</body></html>`);
-        iframeDoc.close();
-        printIframe.onload = function () {
-          try {
-            printIframe.contentWindow.focus();
-            printIframe.contentWindow.print();
-          } catch (e) {
-            console.error("打印出错:", e);
-            alert("打印功能可能被浏览器阻止或发生错误。");
-          } finally {
-            document.body.removeChild(printIframe);
           }
+          return `<td>${cellContent || '<div class="empty-cell">-</div>'}</td>`;
+        }).join('')}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        </div>`;
+
+        // 3. 将之前在 <style> 中定义的打印样式，现在用字符串的形式定义在JS中
+        const printStyles = `
+      body { font-family: sans-serif; }
+      .timetable-container {
+      margin-top: 30px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+      .timetable-header h2 { color: #0d47a1; font-size: 22px; margin: 0 0 20px 0; text-align: center; }
+      .timetable-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .timetable-table th {
+        background-color: #0d47a1;
+        color: white;
+        font-weight: bold;
+        padding: 12px 8px;
+        text-align: center;
+      }
+
+      .timetable-table td {
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        text-align: center;
+        height: 80px;
+        vertical-align: top;
+      }
+      .time-cell { background-color: #e3f2fd; font-weight: bold; color: #0d47a1; }
+      .course-cell { background-color: #e8f5e9; border-radius: 4px; padding: 8px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
+      .course-name { font-weight: bold; color: #2e7d32; margin-bottom: 5px; }
+      .course-location { font-size: 13px; color: #388e3c; }
+      .empty-cell { color: #bdbdbd; font-style: italic; }
+    `;
+
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none'; // 确保iframe本身是不可见的
+        document.body.appendChild(iframe); // 将iframe添加到主页面
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        // 将样式和HTML内容一起写入iframe
+        iframeDoc.write(`
+      <html>
+        <head>
+          <title>教师课表</title>
+          <style>${printStyles}</style>
+        </head>
+        <body>
+          ${timetableHtml}
+        </body>
+      </html>
+    `);
+        iframeDoc.close();
+
+        // 等待iframe内容加载完成再打印
+        iframe.onload = function() {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+          document.body.removeChild(iframe); // 打印结束后立即移除iframe
         };
+
       } catch (error) {
         console.error('准备打印课表时发生错误:', error.message);
         alert(`准备打印数据失败: ${error.message}`);
       } finally {
         this.isLoadingPrint = false;
       }
-    }
+    },
   }
 };
 </script>
 
+<!-- <style>
+@media print {
+  /* 隐藏页面上所有其他元素 */
+  body * {
+    visibility: hidden;
+  }
+  /* 只显示打印容器及其所有子元素 */
+  #print-container, #print-container * {
+    visibility: visible;
+  }
+  /* 将打印容器定位到页面左上角，并铺满 */
+  #print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+ /* 表格样式 */
+.timetable-container {
+  margin-top: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.timetable-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.timetable-header h2 {
+  color: #0d47a1;
+  font-size: 22px;
+  margin: 0;
+}
+
+.timetable-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.timetable-table th {
+  background-color: #0d47a1;
+  color: white;
+  font-weight: bold;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.timetable-table td {
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+  height: 80px;
+  vertical-align: top;
+}
+
+.time-cell {
+  background-color: #e3f2fd;
+  font-weight: bold;
+  color: #0d47a1;
+}
+
+.course-cell {
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 8px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  -webkit-print-color-adjust: exact;
+}
+
+.course-name {
+  font-weight: bold;
+  color: #2e7d32;
+  margin-bottom: 5px;
+}
+
+.course-location {
+  font-size: 13px;
+  color: #388e3c;
+}
+
+.empty-cell {
+  color: #bdbdbd;
+  font-style: italic;
+}
+}
+</style> -->
 
 <style scoped>
-  /* 页面内容容器 */
-  .page-container {
+/* 页面内容容器 */
+.page-container {
   width: 100%;
   flex-grow: 1;
   padding: 20px;
   box-sizing: border-box;
 }
 
-  .inner-container {
-    background-color: #f8f9fa;
+.inner-container {
+  background-color: #f8f9fa;
   padding: 30px 40px 40px;
   border-radius: 8px;
 }
 
-  .inner-container h1 {
-    font-size: 30px;
+.inner-container h1 {
+  font-size: 30px;
   font-weight: 600;
   color: #0d47a1;
   margin: 0;
 }
 
-  /* 表格样式 */
-  table {
+/* 表格样式 */
+table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
@@ -353,20 +500,20 @@ export default {
   background-color: white;
 }
 
-  th,
-  td {
+th,
+td {
   padding: 10px;
   border: 1px solid #ddd;
   text-align: center;
 }
 
-  th {
-    background-color: #0d47a1;
+th {
+  background-color: #0d47a1;
   color: white;
   font-weight: bold;
 }
 
-  .print-btn {
+.print-btn {
   padding: 10px 20px;
   background-color: #0d47a1;
   color: white;
@@ -378,27 +525,27 @@ export default {
   margin-top: 20px;
 }
 
-  .print-btn:hover {
-    background-color: #1565c0;
+.print-btn:hover {
+  background-color: #1565c0;
 }
 
-  /* 搜索框和按钮样式 */
-  .search-container {
+/* 搜索框和按钮样式 */
+.search-container {
   display: flex;
   align-items: center;
   margin-top: 20px;
   margin-bottom: 10px; /* 修改了下边距 */
 }
 
-  /* 新增的样式 */
-  .search-result-display {
+/* 新增的样式 */
+.search-result-display {
   color: #555;
   font-size: 14px;
   margin-bottom: 20px;
   height: 1em; /* 保证元素占位，防止页面内容跳动 */
 }
 
-  .search-input {
+.search-input {
   flex: 1;
   padding: 10px;
   border: 1px solid #ddd;
@@ -406,7 +553,7 @@ export default {
   margin-right: 10px;
 }
 
-  .search-btn {
+.search-btn {
   padding: 10px 20px;
   background-color: #0d47a1;
   color: white;
@@ -416,7 +563,8 @@ export default {
   transition: background-color 0.3s;
 }
 
-  .search-btn:hover {
-    background-color: #1565c0;
+.search-btn:hover {
+  background-color: #1565c0;
 }
 </style>
+

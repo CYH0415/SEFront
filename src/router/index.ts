@@ -18,6 +18,7 @@ import CourseManage from '../infoModule/src/components/CourseManage.vue'
 import GradeQuery from '../infoModule/src/components/GradeQuery.vue'
 import GradeModify from '../infoModule/src/components/GradeModify.vue'
 import GradeAnalyze from '../infoModule/src/components/GradeAnalyze.vue'
+import ShowSection from "../infoModule/src/components/ShowSection.vue";
 
 // Testing Module imports
 import TestingApp from '../testingModule/src/App.vue'
@@ -131,7 +132,8 @@ const routes = [
       { path: 'course-manage', name: 'CourseManage', component: CourseManage, meta: { allowedRoles: ['admin', 'teacher', 'student']} },
       { path: 'grade-query', name: 'GradeQuery', component: GradeQuery, meta: { allowedRoles: ['student'] }},
       { path: 'grade-modify', name: 'GradeModify', component: GradeModify, meta: { allowedRoles: ['admin', 'teacher']} },
-      { path: 'grade-analyze', name: 'GradeAnalyze', component: GradeAnalyze, meta: { allowedRoles: ['teacher', 'student']}}
+      { path: 'grade-analyze', name: 'GradeAnalyze', component: GradeAnalyze, meta: { allowedRoles: ['teacher', 'student']}},
+      { path: 'show-section', name: 'ShowSection', component: ShowSection, meta: { allowedRoles: ['teacher']}},
     ]
   },
   // Testing Module routes

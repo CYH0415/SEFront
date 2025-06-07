@@ -4,7 +4,7 @@
       <h2>学生信息系统</h2>
       <nav>
         <!--// lmt 查看选课结果（需传递 userId） -->
-        <router-link
+        <router-link v-if="currentUserId"
             :to="{
           name: 'CourseResultS',
           params: { userId: currentUserId }
@@ -13,7 +13,7 @@
         >查看选课结果
         </router-link>
         <!--// lmt 查看课表（需传递 userId） -->
-        <router-link
+        <router-link v-if="currentUserId"
             :to="{
           name: 'CourseTableS',
           params: { userId: currentUserId }
@@ -29,8 +29,7 @@
     <main class="content">
       <div class="top-bar">
         <div class="user-area" @click="toggleDropdown">
-          <!-- <img src="https://i.pravatar.cc/40" alt="头像" class="avatar" /> -->
-          <span class="username">学生姓名</span>
+          <span class="username">同学，您好</span>
           <svg class="arrow" viewBox="0 0 1024 1024" width="12" height="12">
             <path d="M512 672L192 352h640z" fill="#333" />
           </svg>
@@ -48,28 +47,17 @@
 // lmt
 import { ref, computed,onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-
+import {getCurrentUserId} from '/src/infoModule/src/function/CurrentUser.ts'
 const router = useRouter();
 const route = useRoute();
+const currentUserId = ref(null);
+const userId = ref(null);
 
-// lmt
-// 初始值设为路由参数或空字符串（避免 undefined）
-const currentUserId = computed(() => {
-  return route.params.userId || localStorage.getItem('studentId') || 'default-user-id';
+onMounted(async () => {
+  currentUserId.value = await getCurrentUserId();
+  userId.value = currentUserId.value;
 });
 
-// 使用 computed 声明（适用于依赖其他响应式数据）
-const userId = computed(() => {
-  return route.params.userId || localStorage.getItem('studentId') || 'default';
-});
-// lmt
-// 可选：在组件挂载后验证 userId
-onMounted(() => {
-  if (!userId.value) {
-    console.warn('未获取到有效的 userId，可能导致导航错误');
-    // 可选择跳转到登录页或其他处理
-  }
-});
 
 const isDropdownVisible = ref(false);
 
