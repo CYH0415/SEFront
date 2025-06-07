@@ -96,7 +96,7 @@
 import "../assets/pages_styles.css";
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import axios from 'axios'
+import axios from '../plugins/axios.ts';
 import { getCurrentUserType } from "../function/CurrentUser.ts";
 
 // 定义GradeModifyDTO相关接口

@@ -10,22 +10,22 @@ const routes = [
   },
   {
     path: '/course-list',
-    name: 'course-list',
+    name: 'SharingCourseList',
     component: CourseList
   },
   {
     path: '/course/:sectionId',
-    name: 'CourseDetail',
+    name: 'SharingCourseDetail',
     component: CourseDetail,
     children: [
       {
         path: 'homework',
-        name: 'Homework',
+        name: 'SharingHomework',
         component: HomeworkList,
       },
       {
         path: 'resourceTree',
-        name: 'ResourceTree',
+        name: 'SharingResourceTree',
         component: ResourceTree,
       },
     ]

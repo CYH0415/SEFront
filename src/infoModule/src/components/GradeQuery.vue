@@ -44,7 +44,7 @@
 import "../assets/pages_styles.css";
 import { ref, computed, onBeforeUnmount, onMounted } from 'vue';
 import * as echarts from 'echarts';
-import axios from 'axios';
+import axios from '../plugins/axios.ts';
 import { getCurrentUserId } from "../function/CurrentUser.ts";
 
 // 定义GradeQueryDTO相关接口
