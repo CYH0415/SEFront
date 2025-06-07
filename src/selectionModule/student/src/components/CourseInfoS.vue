@@ -1,3 +1,4 @@
+<!-- szx -->
 <template>
   <div class="page-container">
     <div class="inner-container">
@@ -65,6 +66,7 @@ export default {
         }
         // 本地筛选
         const results = this.compute(this.allCourses, searchData);
+        this.allCourses=results;
       } catch (error) {
         alert('查询失败：' + error.message);
       }

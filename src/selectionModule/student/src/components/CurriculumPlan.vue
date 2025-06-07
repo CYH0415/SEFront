@@ -1,9 +1,13 @@
+<!-- zza -->
 <template>
   <div class="page-container">
     <div class="inner-container">
       <div class="header-row">
         <h1>定制培养方案</h1>
-        <button @click="showCurriculum" class="confirm-btn">我的培养方案</button>
+        <div class="button-container">
+          <button @click="showCurriculum" class="confirm-btn">我的培养方案</button>
+          <button @click="toggleActionMenu" class="confirm-btn" style="margin-top: 10px;">确认操作</button>
+        </div>
       </div>
       <!-- 展示培养方案的模态框 -->
       <div v-if="showCurriculumModal" class="modal-overlay">
@@ -36,7 +40,6 @@
           </button>
         </div>
       </div>
-      <p>根据您的专业，为您推荐以下选修课程：</p>
       <form id="courseForm">
         <table id="courseTable">
           <thead>
@@ -60,17 +63,14 @@
           </tr>
           </tbody>
         </table>
-        <div class="button-group">
-          <button type="button" @click="toggleActionMenu" class="confirm-btn">确认</button>
-        </div>
         <!--  浮动菜单 -->
         <div v-if="showActionMenu" class="modal-overlay">
           <div class="action-menu">
             <p style="margin-bottom: 20px; font-size: 18px;">你希望的操作</p>
             <ul>
-              <button type="button" @click="confirmSelection">添加课程</button>
-              <button type="button" @click="confirmRemove">删除课程</button>
-              <button type="button" @click="cancelAction">取消</button>
+              <button type="button" @click="confirmSelection">培养方案添加课程</button>
+              <button type="button" @click="confirmRemove">培养方案移除课程</button>
+              <button type="button" @click="cancelAction">取消我的操作</button>
             </ul>
           </div>
         </div>
@@ -90,7 +90,7 @@ export default {
       ],
       selectedCourses: [],
       showCurriculumModal: false, // 控制培养方案模态框显示
-      showActionMenu: false // 控制菜单显示
+      showActionMenu: false, // 控制菜单显示
     };
   },
   mounted() {
@@ -278,8 +278,31 @@ table {
 .header-row {
   display: flex;
   justify-content: space-between; /* 左右分布 */
-  align-items: center; /* 垂直居中 */
+  align-items: flex-start; /* 顶部对齐 */
   margin-bottom: 20px;
+  position: relative;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column; /* 垂直排列按钮 */
+  align-items: flex-end; /* 按钮靠右对齐 */
+}
+
+.search-container {
+  position: absolute; /* 绝对定位 */
+  bottom: 0; /* 距离底部为0 */
+  left: 0; /* 距离左侧为0 */
+  width: 50%; /* 宽度与父级相同 */
+  box-sizing: border-box; /* 确保padding不会影响宽度 */
+  padding-left: 10px; /* 根据需要添加内边距 */
+}
+
+.search-input {
+  padding: 8px;
+  width: calc(100% - 20px); /* 减去左右内边距 */
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
 .header-row h1 {
