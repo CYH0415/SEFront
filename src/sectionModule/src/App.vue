@@ -44,11 +44,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getCurrentUserName } from '../../infoModule/src/function/CurrentUser'
+import { userStore } from '../../infoModule/src/store/user'
+import { useRouter } from 'vue-router'
 
-const username = ref('管理员')  // 这里可以以后从后端接口动态拿到
+const username = ref('加载中...')  // 初始显示加载中
 const dropdownVisible = ref(false)
 const mainMenuOpen = ref(true)
+
+// 初始化用户信息
+const initUserInfo = async () => {
+  try {
+    const userName = await getCurrentUserName()
+    username.value = userName || '未知用户'
+    console.log('当前用户名:', userName)
+  } catch (error) {
+    console.error('获取用户名失败:', error)
+    username.value = '获取失败'
+  }
+}
+
+// 组件挂载时获取用户信息
+onMounted(() => {
+  initUserInfo()
+})
 
 // 点击头像区域切换下拉框
 const toggleDropdown = () => {
@@ -57,8 +77,10 @@ const toggleDropdown = () => {
 
 // 点击退出登录
 const logout = () => {
+  const router = useRouter()
   alert('退出登录')
-  // 这里可以添加真正的退出逻辑，比如跳转到登录页
+  userStore().logout()
+  router.push('/login')  // 跳转到登录页面
 }
 
 // 切换课程安排子系统菜单

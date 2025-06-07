@@ -12,30 +12,25 @@ import 'element-plus/dist/index.css' // 引入样式
 const pinia = createPinia()
 const app = createApp(App)
 
-// // --- 开发环境默认登录用户 ---
-// // 这个 'if' 判断语句确保以下代码只在开发模式下运行，
-// // 在最终打包上线（生产环境）时会被自动移除，保证了线上环境的安全性。
+// --- 开发环境默认登录用户 ---
+// 这个 'if' 判断语句确保以下代码只在开发模式下运行，
+// 在最终打包上线（生产环境）时会被自动移除，保证了线上环境的安全性。
+
 // if (import.meta.env.DEV) {
 //     console.log(
 //         '%c[开发模式] 已启用默认用户自动登录。',
 //         'color: #007bff; font-weight: bold;'
 //     );
-//
+
 //     // 在这里定义您想默认登录的用户信息
 //     // 您可以随时修改 role 为 'student' 来以学生身份进入
-//     // const defaultUser = {
-//     //     token: 'dev-token-for-testing-only', // 模拟的令牌
-//     //     role: 'teacher',                     // 角色: 'teacher' 或 'student'
-//     //     username: '默认教师用户',             // 显示的用户名
-//     //     userId: '19'                       // 用户ID
-//     // };
 //     const defaultUser = {
 //         token: 'dev-token-for-testing-only', // 模拟的令牌
-//         role: 'student',                     // 角色: 'teacher' 或 'student'
-//         username: '默认学生用户',             // 显示的用户名
-//         userId: '3'                       // 用户ID
+//         role: 'teacher',                     // 角色: 'teacher' 或 'student'
+//         username: '默认教师用户',             // 显示的用户名
+//         userId: 'T999'                       // 用户ID
 //     };
-//
+
 //     // 为了避免每次刷新都覆盖，可以检查token是否存在
 //     if (!localStorage.getItem('token')) {
 //         localStorage.setItem('token', defaultUser.token);
@@ -44,8 +39,9 @@ const app = createApp(App)
 //         // 您的 App.vue 从一个 'user' 对象里读取 userId，我们也模拟这个结构
 //         localStorage.setItem('user', JSON.stringify({ userId: defaultUser.userId }));
 //     }
-//
+
 // }
+
 // --- 默认登录用户设置结束 ---
 
 app.use(pinia)
