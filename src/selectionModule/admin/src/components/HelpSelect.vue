@@ -42,13 +42,10 @@
         </datalist>
         <input list="semester-list" id="courseSemester" placeholder="上课学期" class="search-input" v-model="searchCourseSemester">
         <datalist id="semester-list">
-          <option value="春夏"></option>
-          <option value="秋冬"></option>
           <option value="春"></option>
           <option value="夏"></option>
           <option value="秋"></option>
           <option value="冬"></option>
-          <option value="短"></option>
         </datalist>
         <input type="text" id="courseName" placeholder="课程名称" class="search-input" v-model="searchCourseName">
         <input type="text" id="courseInstrutor" placeholder="任课教师" class="search-input" v-model="searchCourseInstructor">
@@ -64,6 +61,7 @@
           <th>课程学分</th>
           <th>上课时间</th>
           <th>上课地点</th>
+          <th>课程剩余容量</th>
           <th>操作</th>
         </tr>
         </thead>
@@ -76,6 +74,7 @@
           <td>{{ course.credit }}</td>
           <td>{{ course.time }}</td>
           <td>{{ course.place }}</td>
+          <td>{{ course.capacity }}</td>
           <td>
             <button @click="selectCourse(course.sectionId)">选择</button>
           </td>
@@ -102,7 +101,7 @@ export default {
       searchCourseName: null,
       searchCourseInstructor: null,
       courses: [
-        { courseId: '', name: '', instructor: '', credit: '', time: '', place: '', sectionId: ''}
+        { courseId: '', name: '', instructor: '', credit: '', time: '', place: '', sectionId: '', capacity: ''}
       ],
       selectedCourseId: null,
     };
@@ -126,10 +125,8 @@ export default {
             'Content-Type': 'application/json'
           }
         });
-
-        if (!response.ok) {
-          const errorMessage = await response.text();
-          alert(errorMessage);
+        if (response.status === 404) {
+          alert('未查询到相关学生，请检查输入信息是否正确');
         } else {
           const data = await response.json();
           this.students = data;
@@ -175,9 +172,8 @@ export default {
           }
         });
 
-        if (!response.ok) {
-          const errorMessage = await response.text();
-          alert(errorMessage);
+        if (response.status === 404) {
+          alert('未查询到相关课程，请检查输入信息是否正确！');
         } else {
           const data = await response.json();
           this.courses = data;
@@ -215,6 +211,23 @@ export default {
             }
           } else {
             alert('选课成功！');
+
+            const params = new URLSearchParams();
+            params.append('courseYear', this.searchCourseYear);
+            if (this.searchCourseSemester) params.append('courseSemester', this.searchCourseSemester);
+            if (this.searchCourseName) params.append('courseName', this.searchCourseName);
+            if (this.searchCourseInstructor) params.append('courseInstructor', this.searchCourseInstructor);
+
+            const response = await fetch(`http://localhost:8080/admin/HelpSelect/courses?${params.toString()}`, {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+            const data = await response.json();
+            this.courses = data;
+
             if (!confirm('是否继续选课')){
               document.getElementById('studentSearchContainer').style.display = 'block';
               document.getElementById('courseSearchContainer').style.display = 'none';
