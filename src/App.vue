@@ -1,11 +1,27 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import { computed } from 'vue'
+import { getCurrentUserType } from '/src/infoModule/src/function/CurrentUser.ts'
 
 const route = useRoute()
+const router = useRouter()
 
 // 判断是否显示导航栏（在根路径时显示）
 const showNavigation = computed(() => route.path === '/')
+
+// 点击选课系统后根据用户类型跳转
+const goToSelection = async () => {
+  const userType = await getCurrentUserType()
+
+  let targetPath = '/selection-student' // 默认学生
+  if (userType === 'ROLE_TEACHER') {
+    targetPath = '/selection-teacher'
+  } else if (userType === 'ROLE_ADMIN') {
+    targetPath = '/selection-admin'
+  }
+
+  router.push(targetPath)
+}
 </script>
 
 <template>
@@ -51,11 +67,11 @@ const showNavigation = computed(() => route.path === '/')
         </div>
 
         <div class="module-card">
-          <router-link to="/selection-student/CourseResultS/1" class="module-link">
+          <a href="#" class="module-link" @click.prevent="goToSelection">
             <div class="module-icon">📋</div>
             <h3>选课子系统</h3>
             <p>学生选课、教师课程、管理员管理</p>
-          </router-link>
+          </a>
         </div>
       </div>
     </div>
