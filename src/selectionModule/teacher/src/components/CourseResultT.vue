@@ -5,6 +5,7 @@
       <div class="search-container">
         <input list="year-list" placeholder="上课年份" class="search-input" v-model="currentYear">
         <datalist id="year-list">
+          <option value="2026"></option>
           <option value="2025"></option>
           <option value="2024"></option>
           <option value="2023"></option>
@@ -25,26 +26,34 @@
         <button @click="searchCourse" class="search-btn">查询</button>
       </div>
 
-      <div id="searchResult">{{ searchResult }}</div>
+      <div id="searchResult" class="search-result-display">{{ searchResult }}</div>
       <table id="courseTable">
         <thead>
         <tr>
           <th>课程名称</th>
+          <th>年份</th>
+          <th>学期</th>
           <th>选课学生数量</th>
           <th>上课时间</th>
           <th>上课地点</th>
         </tr>
         </thead>
         <tbody>
+        <tr v-if="courses.length === 0 && !initialLoad">
+          <td colspan="6" style="text-align: center; padding: 20px; color: #555;">
+            您在该时间段没有对应课程
+          </td>
+        </tr>
         <tr v-for="(course, index) in courses" :key="index">
           <td>{{ course.name }}</td>
+          <td>{{ course.year }}</td>
+          <td>{{ formatSemester(course.semester) }}</td>
           <td>{{ course.takes }}</td>
           <td>{{ formatTime(course.time) }}</td>
           <td>{{ course.place }}</td>
         </tr>
         </tbody>
       </table>
-      <!-- 打印按钮 -->
       <button class="print-btn" @click="printTimetable">打印选课结果</button>
     </div>
   </div>
@@ -64,8 +73,10 @@ export default {
       initialLoad: true,
       // 确保这些值是动态获取或正确设置的
       teacherId: this.$route.params.userId || '', // 示例: 教师ID
-      currentYear: new Date().getFullYear().toString(), // 示例: 当前年份
-      currentSemester: '春夏', // 示例: 当前学期
+      currentYear: '', // 示例: 当前年份
+      currentSemester: '', // 示例: 当前学期
+      searchedYear: '',
+      searchedSemester: '',
       // 如果您决定保留 searchResult 用于显示特定信息，请在这里定义
       // searchResult: '',
     };
@@ -85,6 +96,33 @@ export default {
     this.fetchCourseResults(); // 初始加载课程列表
   },
   methods: {
+    getBackendSemester(frontendSemester) {
+      const mapping = {
+        '春夏': 'SpringSummer', // 假设数据库中用 'SpringSummer' 代表春夏两学期
+        '秋冬': 'FallWinter',   // 假设数据库中用 'FallWinter' 代表秋冬两学期
+        '春': 'Spring',
+        '夏': 'Summer',
+        '秋': 'Fall',
+        '冬': 'Winter',
+        '短': 'Short', // 假设的短期学期英文表示
+        // 添加其他必要的映射
+      };
+      return mapping[frontendSemester] || frontendSemester; // 如果没有映射，则返回原值
+    },
+    formatSemester(semester) {
+      // 将学期转换为更易读的格式
+      // 例："Spring" => "春"
+      const mapping = {
+        'Spring': '春',
+        'Summer': '夏',
+        'Fall': '秋',
+        'Winter': '冬',
+        'SpringSummer': '春夏',
+        'FallWinter': '秋冬',
+        'Short': '短', // 假设的短期学期
+      };
+      return mapping[semester] || semester; // 如果没有映射，则返回原值
+    },
     formatTime(timeStr) {
       // 匹配并去掉秒，只保留小时和分钟
       // 例："周一 08:00:00-09:35:00" => "周一 08:00-09:35"
@@ -100,12 +138,16 @@ export default {
       this.initialLoad = false;
       this.courses = []; // 清空旧数据
 
+      const yearToSearch = this.currentYear;
+      const semesterToSearch = this.currentSemester;
+      const courseNameToSearch = this.searchCourseName;
+
       try {
+        const backendSearchSemester = this.getBackendSemester(this.currentSemester);
         const queryParams = new URLSearchParams({
-          // courseName 可以为空，后端应能处理
           courseName: this.searchCourseName || '',
           courseYear: this.currentYear,
-          courseSemester: this.currentSemester,
+          courseSemester: backendSearchSemester, // 使用转换后的学期值
         });
 
         const response = await fetch(`http://localhost:8080/teacher/${this.teacherId}/CourseResultT?${queryParams}`);
@@ -132,6 +174,14 @@ export default {
 
         // 只有当 response.ok 为 true 时，才尝试解析JSON
         this.courses = await response.json();
+        this.searchedYear = yearToSearch;
+        this.searchedSemester = semesterToSearch;
+        // 2. 更新提示文字
+        this.searchResult = `当前查询：${this.searchedYear}学年 ${this.searchedSemester}学期`;
+        // 3. 清空课程名称输入框
+        this.searchCourseName = courseNameToSearch;
+        this.currentYear = '';
+        this.currentSemester = '';
 
       } catch (error) {
         console.error('获取课程结果列表时发生错误:', error.message);
@@ -144,14 +194,22 @@ export default {
     },
 
     async printTimetable() {
+      if (!this.searchedYear || !this.searchedSemester) {
+        alert("请指定学年和学期，再打印课表。");
+        return;
+      }
       this.$router.push({ name: 'CourseResultT', params: { userId: this.teacherId } });
       this.isLoadingPrint = true;
       try {
+        const backendSearchSemesterForTimetable = this.getBackendSemester(this.searchedSemester);
+
         const queryParams = new URLSearchParams({
-          year: this.currentYear,
-          semester: this.currentSemester,
+          year: this.searchedYear,
+          semester: backendSearchSemesterForTimetable,
         });
         const response = await fetch(`http://localhost:8080/teacher/${this.teacherId}/timetable?${queryParams}`);
+
+        // ... 后续逻辑保持不变 ...
 
         if (!response.ok) {
           let errorDetail = `请求课表数据失败，状态码: ${response.status} ${response.statusText}`;
@@ -180,22 +238,31 @@ export default {
         // ... （后续生成HTML和打印的逻辑不变） ...
         const daysOrder = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
         const periods = [
-          "第1-2节",
-          "第3-4节",
-          "第5-6节",
-          "第7-8节",
-          "第9-10节"
+          "08:00-08:50",
+          "09:00-09:50",
+          "10:00-10:50",
+          "11:00-11:50",
+          "13:00-13:50",
+          "14:00-14:50",
+          "15:00-15:50",
+          "16:00-16:50"
         ];
         const periodMap = {
-          "第08:00-09:35节": "第1-2节",
-          "第10:00-11:35节": "第3-4节",
-          "第13:25-15:00节": "第5-6节",
-          "第16:15-17:50节": "第7-8节",
-          "第18:50-20:25节": "第9-10节"
+          "第08:00-08:50节": "08:00-08:50",
+          "第09:00-09:50节": "09:00-09:50", // 假设这两节课都属于 "第1-2节"
+
+          "第10:00-10:50节": "10:00-10:50",
+          "第11:00-11:50节": "11:00-11:50",
+
+          "第13:00-13:50节": "13:00-13:50", // 后端返回这个
+          "第14:00-14:50节": "14:00-14:50", // 后端返回这个
+
+          "第15:00-15:50节": "15:00-15:50", // 后端返回这个
+          "第16:00-16:50节": "16:00-16:50",
         };
 
         let timetableHtml = `
-          <h2>${this.currentYear}学年 ${this.currentSemester}学期 教师课表</h2>
+          <h2>${this.searchedYear}学年 ${this.searchedSemester}学期 教师课表</h2>
           <table border="1" style="border-collapse:collapse; width:100%; font-size:12px; text-align:center;">
             <thead>
               <tr>
@@ -319,7 +386,16 @@ export default {
   .search-container {
   display: flex;
   align-items: center;
+  margin-top: 20px;
+  margin-bottom: 10px; /* 修改了下边距 */
+}
+
+  /* 新增的样式 */
+  .search-result-display {
+  color: #555;
+  font-size: 14px;
   margin-bottom: 20px;
+  height: 1em; /* 保证元素占位，防止页面内容跳动 */
 }
 
   .search-input {

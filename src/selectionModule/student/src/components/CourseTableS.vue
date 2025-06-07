@@ -1,19 +1,30 @@
+<!-- lmt -->
 <template>
   <div class="page-container">
     <div class="inner-container">
       <h1>我的课表</h1>
       <div class="search-container">
-        <!--最开始设成输入学号的形式方便测试，现在已被注释-->
-        <!--<input type="text" v-model="searchStudentId" placeholder="请输入学号" class="search-input">-->
-        <input list="year-list" id="courseYear" placeholder="上课年份" class="search-input" v-model="searchCourseYear">
+        <!-- 年份和学期选择框 -->
+        <input
+            list="year-list"
+            id="courseYear"
+            placeholder="上课年份"
+            class="search-input"
+            v-model.number="searchCourseYear"
+        >
         <datalist id="year-list">
+          <option value="2026"></option>
           <option value="2025"></option>
           <option value="2024"></option>
           <option value="2023"></option>
-          <option value="2022"></option>
-          <option value="2021"></option>
         </datalist>
-        <input list="semester-list" id="courseSemester" placeholder="上课学期" class="search-input" v-model="searchCourseSemester">
+        <input
+            list="semester-list"
+            id="courseSemester"
+            placeholder="上课学期"
+            class="search-input"
+            v-model="searchCourseSemester"
+        >
         <datalist id="semester-list">
           <option value="春"></option>
           <option value="夏"></option>
@@ -42,32 +53,42 @@
         <div class="timetable-header">
           <h2>{{ searchCourseYear }}年{{ searchCourseSemester }}季学期课表</h2>
         </div>
-        <table class="timetable-table">
-          <thead>
-          <tr>
-            <th>时间</th>
-            <th>周一</th>
-            <th>周二</th>
-            <th>周三</th>
-            <th>周四</th>
-            <th>周五</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="(row, index) in tableData" :key="index">
-            <td class="time-cell">{{ row.time }}</td>
-            <td v-for="day in ['周一', '周二', '周三', '周四', '周五']" :key="day">
-              <div v-if="row[day]" class="course-cell">
-                <div class="course-name">{{ row[day].courseName }}</div>
-                <div class="course-location">{{ row[day].location }}</div>
-              </div>
-              <div v-else class="empty-cell">-</div>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-        <div class="timetable-footer">
-          <p>注：春夏学期的课表包含春季和夏季课程，秋冬学期的课表包含秋季和冬季课程</p>
+        <div class="table-wrapper"> <!-- 新增表格包装器 -->
+          <table class="timetable-table">
+            <thead>
+            <tr>
+              <th>时间段</th>
+              <th>周一</th>
+              <th>周二</th>
+              <th>周三</th>
+              <th>周四</th>
+              <th>周五</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- 遍历所有时间段（1-8节，每节对应一行） -->
+            <tr v-for="(period, periodIndex) in periodList" :key="periodIndex">
+              <td class="time-cell">{{ period.time }}</td>
+              <!-- 遍历每一天 -->
+              <td v-for="day in ['周一', '周二', '周三', '周四', '周五']" :key="day">
+                <!-- 查找当前时间段和星期对应的课程 -->
+                <div
+                    v-if="getCourseByDayAndPeriod(day, period.time)"
+                    class="course-cell"
+                    @click="showCourseDetails(getCourseByDayAndPeriod(day, period.time))"
+                >
+                  <div class="course-name ellipsis">
+                    {{ getCourseByDayAndPeriod(day, period.time).courseName }}
+                  </div>
+                  <div class="course-location ellipsis">
+                    {{ getCourseByDayAndPeriod(day, period.time).location }}
+                  </div>
+                </div>
+                <div v-else class="empty-cell">-</div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -76,136 +97,72 @@
         {{ noDataMessage }}
       </div>
     </div>
+
+    <!-- 课程详情弹窗 -->
+    <div v-if="showPopup" class="popup-container">
+      <div class="popup-content">
+        <h3>课程详情</h3>
+        <p><strong>课程名称：</strong> {{ currentCourse.courseName }}</p>
+        <p><strong>上课地点：</strong> {{ currentCourse.location }}</p>
+        <p><strong>时间段：</strong> {{ currentCourse.period }}</p>
+        <p><strong>星期：</strong> {{ currentCourse.day }}</p>
+        <button @click="closePopup">关闭</button>
+      </div>
+    </div>
+
+    <!-- 打印专用容器 -->
+    <div id="print-container" class="print-container" style="display: none;"></div>
   </div>
 </template>
 
 <script>
 export default {
-  mounted() {
-    // 打印路由参数 userId
-    console.log('路由参数 userId:', this.$route.params.userId);
-  },
   data() {
     return {
-      // searchStudentId: '',
-      searchCourseYear: '',
-      searchCourseSemester: '',
+      searchCourseYear: null, // 改为数字类型
+      searchCourseSemester: '', // 默认值
       tableData: [],
       loading: false,
       errorMessage: '',
-      noDataMessage: ''
+      noDataMessage: '',
+      showPopup: false,
+      currentCourse: {},
+      // 定义时间段映射（与后端逻辑一致）
+      periodConfig: [
+        { time: '8:00-8:50', slot: 1 },
+        { time: '9:00-9:50', slot: 2 },
+        { time: '10:00-10:50', slot: 3 },
+        { time: '11:00-11:50', slot: 4 },
+        { time: '13:00-13:50', slot: 5 },
+        { time: '14:00-14:50', slot: 6 },
+        { time: '15:00-15:50', slot: 7 },
+        { time: '16:00-16:50', slot: 8 },
+      ]
     };
   },
   computed: {
-    // 从Vuex或路由参数中获取studentId
-    studentId() {
-      // 这里假设studentId存储在Vuex中
-      // return this.$store.state.user.studentId;
-
-      // 如果使用路由参数
-      return 1;
-      // return this.$route.params.userId;
+    periodList() {
+      return this.periodConfig; // 时间段列表（用于渲染表格行）
+    },
+    userId(){
+      return this.$route.params.userId;
     }
   },
   methods: {
-    printPage() {
-      if (!this.searchCourseYear || !this.searchCourseSemester) {
-        this.errorMessage = '请选择年份和学期后再打印';
-        return;
-      }
-
-      if (this.tableData.length === 0) {
-        this.errorMessage = '没有可打印的课表数据';
-        return;
-      }
-
-      // 创建打印样式 - 改进表格样式和对齐
-      const printStyle = `
-    <style>
-      @media print {
-        body * {
-          visibility: hidden;
-        }
-        .timetable-container, .timetable-container * {
-          visibility: visible;
-        }
-        .timetable-container {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
-          padding: 10px;
-        }
-        .timetable-header {
-          text-align: center;
-          margin-bottom: 15px;
-        }
-        .timetable-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 14px;
-          table-layout: fixed; /* 关键：固定表格布局确保列宽一致 */
-        }
-        .timetable-table, .timetable-table th, .timetable-table td {
-          border: 1px solid #ddd; /* 添加边框确保单元格清晰可见 */
-        }
-        .timetable-table th, .timetable-table td {
-          padding: 8px;
-          text-align: center;
-          vertical-align: middle;
-          word-wrap: break-word; /* 允许长文本换行 */
-        }
-        .timetable-table th {
-          background-color: #f2f2f2;
-        }
-        .course-cell {
-          min-height: 60px; /* 设置最小高度确保单元格有足够空间 */
-        }
-        .timetable-footer {
-          margin-top: 20px;
-          font-size: 12px;
-          color: #666;
-          text-align: center;
-        }
-        /* 隐藏不必要的元素 */
-        .page-container, .inner-container {
-          padding: 0;
-          margin: 0;
-          box-shadow: none;
-        }
-        .search-container, .no-data-message, .error-message, .loading-container {
-          display: none;
-        }
-      }
-    </style>
-  `;
-
-      // 创建打印内容
-      const printContent = this.$refs.timetable.cloneNode(true);
-      const printWindow = window.open('', '_blank');
-
-      printWindow.document.write(`
-    <html>
-      <head>
-        <title> ${this.searchCourseYear}年${this.searchCourseSemester}季学期课表</title>
-        ${printStyle}
-      </head>
-      <body>
-        ${printContent.outerHTML}
-      </body>
-    </html>
-  `);
-
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
+    // 中文轉英文
+    getEnglishSemester(chineseSemester) {
+      const map = {
+        '春': 'Spring',
+        '夏': 'Summer',
+        '秋': 'Fall',
+        '冬': 'Winter'
+      };
+      return map[chineseSemester] || chineseSemester;
     },
-
     async searchCoursetable() {
       // 验证输入
-      if (!this.searchCourseYear) {
-        this.errorMessage = '请选择年份';
+      if (!this.searchCourseYear || isNaN(this.searchCourseYear)) {
+        this.errorMessage = '请选择有效年份';
         return;
       }
       if (!this.searchCourseSemester) {
@@ -213,131 +170,341 @@ export default {
         return;
       }
 
-      // 重置状态
+      this.loading = true;
       this.errorMessage = '';
       this.noDataMessage = '';
-      this.loading = true;
       this.tableData = [];
 
+      // 验证 userId 是否存在（由路由保证必填）
+      if (!this.userId) {
+        alert('用户信息异常，请重新登录');
+        return;
+      }
+
+      const params = new URLSearchParams();
+      if (this.searchCourseYear) params.append('courseYear', this.searchCourseYear);
+      if (this.searchCourseSemester) params.append('courseSemester', this.getEnglishSemester(this.searchCourseSemester));
+
       try {
-        const userId = 1;
-        // const userId = this.$route.params.userId; // 获取路由参数
-        if (!userId) {
-          this.errorMessage = '请先获取用户ID';
-          return;
-        }
-
-        // 转换年份为数字并校验
-        const year = Number(this.searchCourseYear);
-        if (isNaN(year)) {
-          this.errorMessage = '年份格式错误，请选择有效年份';
-          return;
-        }
-
-        // 构建查询URL和参数
-        const url = `http://localhost:8080/student/${encodeURIComponent(userId)}/CourseTableS`;
-        const params = new URLSearchParams({
-          year: year.toString(), // 转为字符串传递
-          semester: this.searchCourseSemester // 自动编码中文参数
-        });
-
-        // 发送请求（移除错误的 Content-Type 头）
-        const response = await fetch(`${url}?${params}`, {
+        // 发送请求
+        const response = await fetch(`http://localhost:8080/student/${this.userId}/CourseTableS?${params.toString()}`, {
           method: 'GET',
-          credentials: 'include', // 携带cookie
-          headers: {} // 保留空对象，避免干扰 GET 请求
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
 
-        // 检查HTTP状态码
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({})); // 尝试解析错误JSON
-          const errorMessage = errorData.errorMessage || `HTTP错误 ${response.status}`;
-          throw new Error(errorMessage);
-        }
-
-        // 解析响应数据
+        if (!response.ok) throw new Error('请求失败');
         const data = await response.json();
-        console.log('解析后的响应:', data); // 直接获取解析后的对象
+        console.log('后端返回数据:', data); // 新增调试日志
 
-        // 处理响应数据
+        // 处理错误信息
         if (data.errorMessage) {
           this.errorMessage = data.errorMessage;
           return;
         }
-        if (data.noDataMessage) {
-          this.noDataMessage = data.noDataMessage;
+        if (data.timetable && Object.keys(data.timetable).length === 0) {
+          this.noDataMessage = '暂无选课记录';
           return;
         }
-        if (data.timetable) {
-          this.transformTimetableData(data.timetable);
-        } else {
-          this.errorMessage = '响应格式不正确：缺少 timetable 字段';
-        }
+
+        // 转换数据格式：将后端的{timetable: {周一: [...], 周二: [...], ...}}转为前端所需结构
+        this.tableData = this.transformTimetable(data.timetable);
+        console.log('转换后tableData:', this.tableData); // 新增调试日志
       } catch (error) {
-        console.error('获取课表失败:', error);
-        this.errorMessage = error.message || '获取课表失败，请重试';
+        this.errorMessage = '获取课表失败，请重试';
+        console.error(error);
       } finally {
         this.loading = false;
       }
     },
 
-    transformTimetableData(timetable) {
-      // 定义时间段映射
-      const periodMap = {
-        '1': '第1-2节',
-        '2': '第3-5节',
-        '3': '第6-7节',
-        '4': '第8-10节',
-        '5': '第11-12节'
-      };
-
-      // 初始化课表结构（5行，对应5个时间段）
-      this.tableData = [
-        { time: '第1-2节', 周一: null, 周二: null, 周三: null, 周四: null, 周五: null },
-        { time: '第3-5节', 周一: null, 周二: null, 周三: null, 周四: null, 周五: null },
-        { time: '第6-7节', 周一: null, 周二: null, 周三: null, 周四: null, 周五: null },
-        { time: '第8-10节', 周一: null, 周二: null, 周三: null, 周四: null, 周五: null },
-        { time: '第11-12节', 周一: null, 周二: null, 周三: null, 周四: null, 周五: null },
-      ];
-
-      console.log('原始课表数据:', timetable);
-
-      // 遍历后端返回的星期数据
-      Object.entries(timetable).forEach(([day, courses]) => {
-        console.log(`处理 ${day} 的课程:`, courses);
-
-        courses.forEach(course => {
-          const period = course.period; // 这里使用period字段作为时间段
-          const timeSlot = periodMap[period];
-          console.log(`课程: ${course.courseName}, 时间段: ${period} (映射为: ${timeSlot})`);
-
-          if (!timeSlot) {
-            console.log(`警告: 时间段 ${period} 无法映射到已知时间段`);
-            return;
+    transformTimetable(timetableData) {
+      // 初始化所有时间段和星期的课程为null，并添加period字段
+      const transformed = this.periodConfig.reduce((acc, period) => {
+        acc[period.time] = {
+          time: period.time,
+          slot: period.slot,
+          period: period.time, // 添加时间段字段
+          slots: {
+            周一: null,
+            周二: null,
+            周三: null,
+            周四: null,
+            周五: null
           }
+        };
+        return acc;
+      }, {});
 
-          // 找到对应的时间段行
-          const rowIndex = parseInt(period) - 1;
-          if (rowIndex >= 0 && rowIndex < this.tableData.length) {
-            const row = this.tableData[rowIndex];
-            row[day] = {
-              courseName: course.courseName,
-              location: course.location
+      // 填充课程数据，并添加星期信息
+      Object.entries(timetableData).forEach(([day, courses]) => {
+        courses.forEach(course => {
+          const periodTime = course.period; // 直接使用后端返回的时间段字符串
+          console.log('课程时间段:', periodTime); // 新增调试日志
+          if (transformed[periodTime]) { // 检查时间段是否在periodConfig中
+            transformed[periodTime].slots[day] = {
+              ...course,
+              day: day // 添加星期信息
             };
-            console.log(`成功添加课程到 ${day} ${timeSlot}`);
           } else {
-            console.log(`警告: 找不到匹配的时间段行: ${timeSlot}`);
+            console.warn(`未定义的时间段: ${periodTime}，请检查后端数据或前端periodConfig`);
           }
         });
       });
 
-      console.log('最终课表结构:', this.tableData);
+      // 转换为数组并按时间段排序
+      return Object.values(transformed).sort((a, b) => a.slot - b.slot);
+    },
+
+    // 辅助函数：根据星期和时间段获取课程
+    getCourseByDayAndPeriod(day, periodTime) {
+      return this.tableData.find(period => period.time === periodTime)?.slots[day];
+    },
+
+    // 打印功能 - 只打印课表信息
+    printPage() {
+      // 检查是否有课表数据
+      if (!this.tableData || this.tableData.length === 0) {
+        this.errorMessage = '没有可打印的课表数据';
+        return;
+      }
+
+      // 创建打印专用容器
+      const printContainer = document.getElementById('print-container');
+      printContainer.innerHTML = '';
+
+      // 复制课表内容到打印容器
+      const timetableCopy = this.$refs.timetable.cloneNode(true);
+
+      // 创建打印样式
+      const printStyle = document.createElement('style');
+      printStyle.textContent = `
+        @media print {
+          .table-wrapper { overflow-x: visible !important; }
+          .timetable-table { table-layout: auto !important; width: auto !important; min-width: auto !important; }
+          .timetable-table th,
+          .timetable-table td {
+            width: auto !important; /* 取消固定列宽 */
+            height: auto !important; /* 取消固定行高 */
+            line-height: normal;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: unset !important;
+            word-wrap: break-word; /* 允许单词内换行 */
+          }
+          .ellipsis { display: block !important; height: auto !important; }
+        }
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #print-container, #print-container * {
+            visibility: visible;
+          }
+          #print-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+          }
+          .timetable-table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          .timetable-table th,
+          .timetable-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+          }
+          .course-cell {
+            background-color: #f0f0f0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            word-wrap: break-word; /* 打印时允许自动换行 */
+          }
+          .timetable-table tbody tr {
+            page-break-inside: avoid;
+          }
+          .ellipsis {
+            white-space: normal !important; /* 打印时取消省略号，允许换行 */
+            overflow: visible !important;
+            text-overflow: unset !important;
+          }
+        }
+      `;
+
+      // 添加样式到打印容器
+      timetableCopy.appendChild(printStyle);
+
+      // 添加到打印容器
+      printContainer.appendChild(timetableCopy);
+
+      // 显示打印容器
+      printContainer.style.display = 'block';
+
+      // 执行打印
+      window.print();
+
+      // 打印完成后隐藏打印容器
+      setTimeout(() => {
+        printContainer.style.display = 'none';
+      }, 100);
+    },
+
+    // 弹窗相关方法
+    showCourseDetails(course) {
+      this.currentCourse = course;
+      this.showPopup = true;
+    },
+    closePopup() {
+      this.showPopup = false;
     }
   }
 };
 </script>
 
 <style scoped>
+/* 新增表格包装器样式 */
+.table-wrapper {
+  overflow-x: auto; /* 允许水平滚动 */
+  width: 100%;
+}
+
+/* 固定列宽和行高 */
+.timetable-table {
+  table-layout: fixed; /* 关键属性：固定表格布局 */
+  width: 100%;
+  min-width: 900px; /* 防止表格过窄 */
+}
+
+.timetable-table th,
+.timetable-table td {
+  width: 150px; /* 固定列宽 */
+  height: 100px; /* 固定行高 */
+  line-height: 1.4; /* 固定行间距 */
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+  vertical-align: top;
+}
+
+.ellipsis {
+  white-space: nowrap; /* 禁止换行 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 显示省略号 */
+  max-width: 100%;
+  display: block;
+  height: 1.4em; /* 根据行高设置，确保单行显示 */
+}
+
+/* 弹窗样式 */
+.popup-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+}
+
+.popup-content button {
+  margin-top: 15px;
+  padding: 8px 20px;
+  background-color: #0d47a1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+</style>
+
+<style scoped>
+/* 新增表格包装器样式 */
+.table-wrapper {
+  overflow-x: auto; /* 允许水平滚动 */
+  width: 100%;
+}
+
+/* 固定列宽和行高 */
+.timetable-table {
+  table-layout: fixed; /* 关键属性：固定表格布局 */
+  width: 100%;
+  min-width: 900px; /* 防止表格过窄 */
+}
+
+.timetable-table th,
+.timetable-table td {
+  width: 150px; /* 固定列宽 */
+  height: 100px; /* 固定行高 */
+  line-height: 1.4; /* 固定行间距 */
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+  vertical-align: top;
+}
+
+.ellipsis {
+  white-space: nowrap; /* 禁止换行 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 显示省略号 */
+  max-width: 100%;
+  display: block;
+  height: 1.4em; /* 根据行高设置，确保单行显示 */
+}
+
+/* 弹窗样式 */
+.popup-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+}
+
+.popup-content button {
+  margin-top: 15px;
+  padding: 8px 20px;
+  background-color: #0d47a1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
 .page-container {
   width: 100%;
   flex-grow: 1;
@@ -438,13 +605,6 @@ export default {
   font-style: italic;
 }
 
-.timetable-footer {
-  margin-top: 15px;
-  font-size: 13px;
-  color: #757575;
-  text-align: center;
-}
-
 /* 搜索区域样式 */
 .search-container {
   display: flex;
@@ -539,5 +699,57 @@ export default {
   background-color: #e3f2fd;
   color: #0d47a1;
   border: 1px solid #bbdefb;
+}
+
+/* 新增固定列宽和省略号样式 */
+.timetable-table th,
+.timetable-table td {
+  width: 150px; /* 固定列宽 */
+  height: 100px; /* 固定行高 */
+  line-height: 1.4; /* 固定行间距 */
+  overflow: hidden;
+  position: relative;
+}
+
+.ellipsis {
+  white-space: nowrap; /* 禁止换行 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 显示省略号 */
+  max-width: 100%;
+  display: block;
+  height: 1.4em; /* 根据行高设置，确保单行显示 */
+}
+
+/* 弹窗样式 */
+.popup-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+}
+
+.popup-content button {
+  margin-top: 15px;
+  padding: 8px 20px;
+  background-color: #0d47a1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 </style>

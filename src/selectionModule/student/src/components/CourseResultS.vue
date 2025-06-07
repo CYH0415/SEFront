@@ -1,3 +1,4 @@
+<!-- lmt -->
 <template>
   <div class="page-container">
     <div class="inner-container">
@@ -13,13 +14,10 @@
         </datalist>
         <input list="semester-list" id="courseSemester" placeholder="上课学期" class="search-input" v-model="searchCourseSemester">
         <datalist id="semester-list">
-          <option value="春夏"></option>
-          <option value="秋冬"></option>
           <option value="春"></option>
           <option value="夏"></option>
           <option value="秋"></option>
           <option value="冬"></option>
-          <option value="短"></option>
         </datalist>
         <button @click="searchCourse" class="search-btn">查询</button>
       </div>
@@ -67,11 +65,20 @@ export default {
   computed: {
     // 从路由参数中获取 userId
     userId() {
-      // return this.$route.params.userId;
-      return 1;
+      return this.$route.params.userId;
     }
   },
   methods: {
+    // 中文轉英文
+    getEnglishSemester(chineseSemester) {
+      const map = {
+        '春': 'Spring',
+        '夏': 'Summer',
+        '秋': 'Fall',
+        '冬': 'Winter'
+      };
+      return map[chineseSemester] || chineseSemester;
+    },
     async searchCourse() {
       // 验证 userId 是否存在（由路由保证必填）
       if (!this.userId) {
@@ -81,7 +88,7 @@ export default {
 
       const params = new URLSearchParams();
       if (this.searchCourseYear) params.append('courseYear', this.searchCourseYear);
-      if (this.searchCourseSemester) params.append('courseSemester', this.searchCourseSemester);
+      if (this.searchCourseSemester) params.append('courseSemester', this.getEnglishSemester(this.searchCourseSemester));
 
       try {
         const response = await fetch(`http://localhost:8080/student/${this.userId}/CourseResultS?${params.toString()}`, {

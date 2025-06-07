@@ -9,21 +9,24 @@
         <input type="text" id="teacherInput" placeholder="请输入开课教师" class="search-input">
         <select id="dayInput" class="search-input" v-model="daySearch" style="margin-right:10px;">
           <option value="">所有日期</option>
-          <option value="一">星期一</option>
-          <option value="二">星期二</option>
-          <option value="三">星期三</option>
-          <option value="四">星期四</option>
-          <option value="五">星期五</option>
-          <option value="六">星期六</option>
-          <option value="日">星期日</option>
+          <option value="一">周一</option>
+          <option value="二">周二</option>
+          <option value="三">周三</option>
+          <option value="四">周四</option>
+          <option value="五">周五</option>
+          <option value="六">周六</option>
+          <option value="日">周日</option>
         </select>
         <select id="timeInput" class="search-input" v-model="timeSearch" style="margin-right:10px;">
           <option value="">所有时间</option>
-          <option value="8:00-9:30">8:00-9:30</option>
-          <option value="10:00-11:35">10:00-11:35</option>
-          <option value="13:25-15:50">13:25-15:50</option>
-          <option value="16:15-17:50">16:15-17:50</option>
-          <option value="18:50-20:25">18:50-20:25</option>
+          <option value="1">8:00-8：50</option>
+          <option value="2">9:00-9：50</option>
+          <option value="3">10:00-10:50</option>
+          <option value="4">11:00-11:50</option>
+          <option value="5">13:00-13:50</option>
+          <option value="6">14:00-14:50</option>
+          <option value="7">15:00-15:50</option>
+          <option value="8">16:00-16:50</option>
         </select>
         <button @click="searchCourses" class="search-btn">查询</button>
         <input type="checkbox" id="onlyAvailable" v-model="onlyAvailable" @change="searchCourses" style="margin-left:15px;">
@@ -53,8 +56,8 @@
           <td>{{ course.capacity }}</td>
           <td>{{ course.candidate }}</td>
           <td>
-            <button v-if="course.is_selected" @click="dropCourse(course.name,course.id)" :disabled="!course.available">退课</button>
-            <button v-else @click="selectCourse(course.name,course.id)" :disabled="!course.available">选择</button>
+            <button v-if="course.is_selected" @click="dropCourse(course.name,course.id)" :disabled="!this.selectAvailable">退课</button>
+            <button v-else @click="selectCourse(course.name,course.id)" :disabled="!course.available || !this.selectAvailable">选择</button>
           </td>
         </tr>
         </tbody>
@@ -75,31 +78,18 @@ export default {
       courses: [],
       onlyAvailable: false ,// 新增：只查看有余量教学班的选项
       daySearch:"",
-      timeSearch:""
+      timeSearch:"",
+      selectAvailable:true
     };
   },
   mounted() {
-    const now = new Date();
-    const titleElement = document.getElementById('selectionTitle');
-    const tipElement = document.getElementById('selectionTip');
-
-    if (now >= this.PRIMARY_SELECTION_START && now <= this.PRIMARY_SELECTION_END) {
-      titleElement.textContent = '初选课程';
-      tipElement.textContent = '当前处于初选时间内';
-    } else if (now >= this.SUPPLEMENTARY_SELECTION_START && now <= this.SUPPLEMENTARY_SELECTION_END) {
-      titleElement.textContent = '补选课程';
-      tipElement.textContent = '当前处于补选时间内';
-    } else {
-      titleElement.textContent = '非选课时间';
-      tipElement.textContent = '当前不在选课时间范围内';
-      document.getElementById('courseNameInput').disabled = true;
-      document.getElementById('collegeInput').disabled = true;
-      document.getElementById('teacherInput').disabled = true;
-      document.querySelector('.search-btn').disabled = true;
-    }
-    // 页面加载时自动查询所有课程
-    this.searchCourses();
     this.getselectionTime();
+    this.searchCourses();// 页面加载时自动查询所有课程
+  },
+  computed: {
+    userId() {
+      return this.$route.params.userId;
+    }
   },
   methods: {
     async searchCourses() {
@@ -109,8 +99,7 @@ export default {
 
       try {
         // 把筛选条件传给queryCourseDatabase
-        const results = await this.queryCourseDatabase(courseName, college, teacher);
-        this.courses = results;
+        this.courses = await this.queryCourseDatabase(courseName, college, teacher);
       } catch (error) {
         alert('查询失败：' + error.message);
       }
@@ -118,7 +107,7 @@ export default {
     async getselectionTime(){
       // 1. 先获取选课时间
       try {
-        const response = await fetch('http://localhost:8080/student/getSelectionTime');
+        const response = await fetch(`http://localhost:8080/student/${this.userId}/getSelectionTime`);
         if (!response.ok) throw new Error('获取选课时间失败');
         const times = await response.json();
         // 将字符串转成Date对象
@@ -126,19 +115,31 @@ export default {
         this.PRIMARY_SELECTION_END = new Date(times.PRIMARY_SELECTION_END);
         this.SUPPLEMENTARY_SELECTION_START = new Date(times.SUPPLEMENTARY_SELECTION_START);
         this.SUPPLEMENTARY_SELECTION_END = new Date(times.SUPPLEMENTARY_SELECTION_END);
+        const now = new Date();
+        const titleElement = document.getElementById('selectionTitle');
+        const tipElement = document.getElementById('selectionTip');
+        if (now >= this.PRIMARY_SELECTION_START && now <= this.PRIMARY_SELECTION_END) {
+          titleElement.textContent = '初选课程';
+          tipElement.textContent = '当前处于初选时间内';
+          this.selectAvailable = true; // 初选时间可选
+        } else if (now >= this.SUPPLEMENTARY_SELECTION_START && now <= this.SUPPLEMENTARY_SELECTION_END) {
+          titleElement.textContent = '补选课程';
+          tipElement.textContent = '当前处于补选时间内';
+          this.selectAvailable = true; // 补选时间可选
+        } else {
+          titleElement.textContent = '非选课时间';
+          tipElement.textContent = '当前不在选课时间范围内';
+          this.selectAvailable = false; // 非选课时间不可选
+        }
       } catch (err) {
         alert('读取选课时间失败：' + err.message);
-        // 禁用所有输入
-        document.getElementById('courseNameInput').disabled = true;
-        document.getElementById('collegeInput').disabled = true;
-        document.getElementById('teacherInput').disabled = true;
-        document.querySelector('.search-btn').disabled = true;
       }
     },
     // 修正：接收筛选参数
     async queryCourseDatabase(courseName, college, teacher) {
       try {
-        const response = await fetch(`http://localhost:8080/student/1/getSections`);
+        const params = new URLSearchParams();
+        const response = await fetch(`http://localhost:8080/student/${this.userId}/getSections?${params.toString()}`);
         if (!response.ok) throw new Error('网络错误');
         const data = await response.json();
         // 先映射后筛选
@@ -147,6 +148,7 @@ export default {
           name: item.title,
           semester:item.semester,
           time: item.time,
+          timeIds: Array.isArray(item.timeIds) ? item.timeIds : JSON.parse(item.timeIds),
           college: item.dept_name,
           teacher: item.teacher,
           capacity: item.capacity,
@@ -160,8 +162,16 @@ export default {
           const matchTeacher = !teacher || course.teacher.includes(teacher);
           const matchAvailable = !this.onlyAvailable || course.capacity> course.candidate; // 只在选中“只查看有余量教学班”时才检查available
           const matchDay = !this.daySearch || course.time.includes(this.daySearch);
-          const matchTime =! this.timeSearch || course.time.includes(this.timeSearch);
-          // 只在选中“只查看有余量教学班”时才检查available
+          // timeSearch 为空或被包含即可
+          const matchTime =
+              !this.timeSearch ||
+              course.timeIds.includes(Number(this.timeSearch))
+              || course.timeIds.includes(Number(this.timeSearch) + 8)
+              || course.timeIds.includes(Number(this.timeSearch) + 16)
+              || course.timeIds.includes(Number(this.timeSearch) + 24)
+              || course.timeIds.includes(Number(this.timeSearch) + 32)
+              || course.timeIds.includes(Number(this.timeSearch) + 40)
+              || course.timeIds.includes(Number(this.timeSearch) + 48);
           return matchCourseName && matchCollege && matchTeacher && matchAvailable && matchDay && matchTime;
         });
       } catch (err) {
@@ -172,12 +182,14 @@ export default {
       const confirmSelection = confirm(`是否确认选择 ${courseName} 课程？`);
       if (confirmSelection) {
         try {
-          const response = await fetch(`http://localhost:8080/student/1/chooseCourse/${courseId}`);
+          const params = new URLSearchParams();
+          const response = await fetch(`http://localhost:8080/student/${this.userId}/chooseCourse/${courseId}?${params.toString()}`);
           if (!response.ok){
             // 先拿到后端返回的字符串
             const errorMsg = await response.text();
             throw new Error(errorMsg);
           }
+          this.getselectionTime();
           this.searchCourses();
           alert('选课成功');
         } catch (error) {
@@ -189,12 +201,14 @@ export default {
       const confirmDrop = confirm(`是否确认退选 ${courseName} 课程？`);
       if (confirmDrop) {
         try {
-          const response = await fetch(`http://localhost:8080/student/1/dropCourse/${courseId}`);
+          const params = new URLSearchParams();
+          const response = await fetch(`http://localhost:8080/student/${this.userId}/dropCourse/${courseId}?${params.toString()}`);
           if (!response.ok){
             // 先拿到后端返回的字符串
             const errorMsg = await response.text();
             throw new Error(errorMsg);
           }
+          this.getselectionTime();
           this.searchCourses();
           alert('退课成功');
         } catch (error) {
