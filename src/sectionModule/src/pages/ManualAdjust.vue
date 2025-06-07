@@ -78,6 +78,13 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '../utils/request'
+import { getCurrentUserId, getCurrentUserType } from '../../../infoModule/src/function/CurrentUser'
+
+// 获取当前登录用户信息
+const curUid = getCurrentUserId()
+const curUType = getCurrentUserType()
+
+console.log('当前用户信息:', { curUid, curUType })
 
 const applications = ref([])
 const total = ref(0)
@@ -121,9 +128,10 @@ const handleProcess = async (appId: number, secId: number, approved: boolean) =>
   }
 
   try {
+    const adminId = await curUid
     await request.post('/application/process', {
       appId,
-      adminId: 1, // 设置为占位符
+      adminId,
       secId,
       suggestion,
       finalDecision: approved

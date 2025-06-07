@@ -78,12 +78,18 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { fetchAdminSections, modifySection } from '../api/schedule'
+import { getCurrentUserId, getCurrentUserType } from '../../../infoModule/src/function/CurrentUser'
 
 const filters = reactive({
   courseTitle: '',
   semester: '',
   year: new Date().getFullYear(),
 })
+
+const curUid = getCurrentUserId()
+const curUType = getCurrentUserType()
+
+console.log('当前用户信息:', { curUid, curUType })
 
 const tableData = ref<any[]>([])
 const page = ref(1)
