@@ -62,6 +62,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import request from '../utils/request';
+import { getCurrentUserId, getCurrentUserType } from '../../../infoModule/src/function/CurrentUser';
 
 interface Classroom {
   classroomId?: number;
@@ -80,6 +81,12 @@ const form = ref<Classroom>({
   roomNumber: 0,
   capacity: 0
 });
+
+// 获取当前登录用户信息
+const curUid = getCurrentUserId()
+const curUType = getCurrentUserType()
+
+console.log('当前用户信息:', { curUid, curUType })
 
 const searchId = ref('');
 const filteredClassroomList = computed(() =>
