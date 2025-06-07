@@ -71,11 +71,51 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'; // Added onMounted
 import { useRouter } from 'vue-router';
+import axios from "axios";
 
 const router = useRouter();
 const isLoading = ref(false); // Initialize isLoading, set true before fetch, false after
-const studentId=ref(1)
-const url_front = 'http://localhost:8080/';
+const url_front = 'http://localhost:8082/';
+const studentCourses = ref([]);
+const studentCoursesName = ref([]);
+const studentId = computed(() => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  return user ? user.userId : -1;
+});
+const finalStudentId = ref(5211314);
+onMounted(() => {
+  const id = studentId.value;
+  finalStudentId.value = id !== -1 ? parseInt(id, 10) : 5211314;
+
+  fetchStudentCourses();
+});
+const secIdToCourseNameMap = ref({});
+const fetchStudentCourses = async () => {
+  try {
+    const response = await axios.get(`http://localhost:8080/api/students/${finalStudentId.value}/courses`);
+
+    const courseList = response.data || [];
+
+    // 提取学生选课的 sectionId(sec_id)
+    const secIds = courseList.map(course => course.sectionId);
+
+    // 构建映射关系：sectionId -> courseName
+    const secIdToCourseName = {};
+    courseList.forEach(course => {
+      secIdToCourseName[course.sectionId] = course.courseName;
+    });
+
+    // 更新响应式数据
+    studentCourses.value = secIds;
+    secIdToCourseNameMap.value = secIdToCourseName;
+
+    console.log('学生课程列表:', secIds);
+    console.log('课程名映射:', secIdToCourseName);
+  } catch (error) {
+    console.error('获取学生课程失败:', error);
+    alert('无法加载您的课程信息，请重试');
+  }
+};
 // 模拟考试结果数据，实际应从API获取
 const examResults = ref([{
   paperId:1,
@@ -84,8 +124,8 @@ const examResults = ref([{
   paperName:"",
   totalScore:100,
   closeTime: new Date(),
-   openTime: new Date(),
-   date:new Date(),//此处是我写的，用openTime来初始化的，你得稍微改改可能
+  openTime: new Date(),
+  date:new Date(),//此处是我写的，用openTime来初始化的，你得稍微改改可能
 }]); // Initialize as empty
 
 const fetchexamsdata = async() => { // Function to populate mock data
@@ -101,8 +141,8 @@ const fetchexamsdata = async() => { // Function to populate mock data
         paperName:result.paperName? result.paperName:"未命名",
         date:result.openTime,
       }
-})
-  console.log(examResults.value)
+    })
+    console.log(examResults.value)
   } catch (error) {
     console.error('fetchExamResultsForChart error:', error);
     examResults.value = [];
@@ -206,7 +246,7 @@ const clearSearch = () => {
 };
 
 const viewDetails = (result) => {
-  router.push(`/student/result/${result.courseId}/${result.paperId}/${result.studentId}/details`);
+  router.push(`/testing/student/result/${result.courseId}/${result.paperId}/${result.studentId}/details`);
 };
 </script>
 

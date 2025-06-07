@@ -24,17 +24,19 @@
       </div>
 
       <div class="page-container">
-        <router-view :userId = "Number(userId)" :isStudent = "Boolean(isStudent)"></router-view>
+        <router-view :userId = "Number(userId)" :isStudent = "Boolean(isStudent)" v-if="isReady"></router-view>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { getCurrentUserId, getCurrentUserType } from '../../infoModule/src/function/CurrentUser';
 
 const isStudent = ref(false);
 const userId = ref(2);
+const isReady = ref(false);
 const username = ref('教师');  // 这里可以以后从后端接口动态拿到
 const dropdownVisible = ref(false);
 
@@ -48,6 +50,17 @@ const logout = () => {
   alert('退出登录');
   // 这里可以添加真正的退出逻辑，比如跳转到登录页
 }
+
+onMounted(async() => {
+  try{
+    const type = await getCurrentUserType();
+    isStudent.value = (type == 'ROLE_STUDENT');
+    userId.value = await getCurrentUserId();
+    isReady.value = true;
+  } catch (e) {
+    console.log(e);
+  }
+});
 </script>
 
 <style scoped>

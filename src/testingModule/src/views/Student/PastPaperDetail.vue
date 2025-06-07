@@ -136,7 +136,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-const url_front = 'http://localhost:8080/';
+const url_front = 'http://localhost:8082/';
 
 const isLoading = ref(true);
 const paperInfo = ref(null);
@@ -219,7 +219,7 @@ onMounted(async () => {
 
   if (isNaN(paperIdParam) || isNaN(courseIdParam)) {
     alert('无效的考试ID或课程ID');
-    router.push('/student/past-papers');
+    router.push('/testing/student/past-papers');
     isLoading.value = false;
     return;
   }
@@ -332,7 +332,7 @@ const formatDate = (dateString) => {
 };
 
 const goBack = () => {
-  router.push('/student/past-papers');
+  router.push('/testing/student/past-papers');
 };
 </script>
 

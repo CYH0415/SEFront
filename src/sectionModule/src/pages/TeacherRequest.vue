@@ -22,11 +22,7 @@
               />
             </template>
             <div :style="computedContentStyle">{{ sectionDetailContent }}</div>
-          </el-popover>
-        </el-form-item>
-        <el-form-item label="教师ID" prop="teacherId">
-          <el-input-number v-model="form.teacherId" :min="1" placeholder="请输入教师ID" />
-        </el-form-item>
+          </el-popover>        </el-form-item>
 
         <el-form-item label="申请原因" prop="reason">
           <el-input
@@ -45,19 +41,11 @@
     </el-card>
 
     <!-- 历史申请记录 -->
-    <el-card shadow="hover" style="margin-top: 20px">
-      <div class="history-header">
-        <h2>历史申请记录</h2>
-        <div class="search-teacher">
-          <el-input-number
-            v-model="searchTeacherId"
-            :min="1"
-            placeholder="输入教师ID查询历史"
-            style="width: 180px"
-          />          <el-button type="primary" @click="fetchTeacherApplications" :disabled="!searchTeacherId">
-            查询
-          </el-button>
-        </div>
+    <el-card shadow="hover" style="margin-top: 20px">      <div class="history-header">
+        <h2>我的申请记录</h2>
+        <el-button type="primary" @click="fetchCurrentUserApplications">
+          刷新记录
+        </el-button>
       </div>
         <el-table :data="applicationHistory" style="width: 100%; margin-top: 20px" border>        <el-table-column prop="secId" label="sectionID" width="100" align="center" />
         <el-table-column prop="courseTitle" label="课程名称" width="180" align="center" />
@@ -95,12 +83,12 @@ import type { FormInstance } from 'element-plus';
 import { getTeacherApplications, submitTeacherApplication } from '../api/application';
 import { getSectionDetail } from '../api/section';
 import type { SectionDetail } from '../api/section';
+import { getCurrentUserId } from '../../../infoModule/src/function/CurrentUser';
 
 // 表单数据模型
 const form = ref({
   secId: null as number | null,
-  reason: '',
-  teacherId: null as number | null
+  reason: ''
 });
 
 // 课程详情相关
@@ -171,8 +159,7 @@ const computedContentStyle = computed(() => {
 // 表单验证规则
 const rules = {
   secId: [{ required: true, message: '请输入课程章节 ID', trigger: 'blur' }],
-  reason: [{ required: true, message: '请输入申请原因', trigger: 'blur' }],
-  teacherId: [{ required: true, message: '请输入教师ID', trigger: 'blur' }]
+  reason: [{ required: true, message: '请输入申请原因', trigger: 'blur' }]
 };
 
 const formRef = ref<FormInstance>();
@@ -183,27 +170,26 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        // 获取当前用户ID
+        const currentUserId = await getCurrentUserId();
+        
         // 确保表单数据不为 null
-        if (form.value.secId === null || form.value.teacherId === null) {
+        if (form.value.secId === null || !currentUserId) {
           ElMessage.error('请填写完整的表单信息');
           return;
         }
         
         const res = await submitTeacherApplication({
           secId: form.value.secId,
-          teacherId: form.value.teacherId,
+          teacherId: currentUserId,
           reason: form.value.reason
-        });
-
-        // 判断后端返回的 code 是否为 200
+        });        // 判断后端返回的 code 是否为 200
         if (res.data.code === 200) {
           ElMessage.success(res.data.message || '申请提交成功');
           resetForm();
           
-          // 如果当前查询的教师ID与提交的ID相同，则自动刷新列表
-          if (searchTeacherId.value === form.value.teacherId) {
-            fetchTeacherApplications();
-          }
+          // 提交成功后自动刷新申请记录列表
+          fetchCurrentUserApplications();
         } else {
           ElMessage.error(res.data.message || '提交失败，请检查 secId 与教师ID 是否匹配');
         }
@@ -222,32 +208,30 @@ const resetForm = () => {
 };
 
 // 历史申请记录相关
-const searchTeacherId = ref<number | null>(null);
 const applicationHistory = ref<any[]>([]);
 const total = ref(0);
 const currentPage = ref(1);
 const hasSearched = ref(false);
 
-// 获取教师申请历史
-const fetchTeacherApplications = async () => {
-  if (!searchTeacherId.value) {
-    ElMessage.warning('请输入教师ID');
-    return;
-  }
-  
+// 获取当前用户申请历史
+const fetchCurrentUserApplications = async () => {
   try {
-    const res = await getTeacherApplications(searchTeacherId.value);
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      ElMessage.error('无法获取当前用户信息');
+      return;
+    }
+    
+    const res = await getTeacherApplications(currentUserId);
     if (res.data.code === 200) {
       // 从响应中获取申请记录
       applicationHistory.value = res.data.data.items || [];
-      
-      // 数据已经包含所需信息，不需要额外处理
       
       total.value = res.data.data.total || 0;
       hasSearched.value = true;
       
       if (applicationHistory.value.length === 0) {
-        ElMessage.info('该教师暂无申请记录');
+        ElMessage.info('暂无申请记录');
       }
     } else {
       ElMessage.error(res.data.message || '获取历史记录失败');
@@ -262,7 +246,7 @@ const fetchTeacherApplications = async () => {
 // 页码变化
 const handlePageChange = (page: number) => {
   currentPage.value = page;
-  fetchTeacherApplications();
+  fetchCurrentUserApplications();
 };
 
 // 状态格式化

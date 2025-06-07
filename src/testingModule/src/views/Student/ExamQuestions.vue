@@ -75,7 +75,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-const url_front = 'http://localhost:8080/';
+const url_front = 'http://localhost:8082/';
 
 const isLoading = ref(true);
 const isSubmitting = ref(false);
@@ -236,13 +236,17 @@ const fetchPaperQuestions = async (paperId, courseId) => {
     isLoading.value = false;
   }
 };
+const studentId = computed(() => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  return user ? user.userId : -1;
+});
 
 onMounted(async () => {
   const paperId = parseInt(route.params.paperId);
   const courseId = parseInt(route.params.courseId);
   if (isNaN(paperId) || isNaN(courseId)) {
     alert("试卷参数无效！");
-    router.push('/student/dashboard');
+    router.push('/testing/student/dashboard');
     return;
   }
   // startTime 逻辑
@@ -370,7 +374,6 @@ const submitExam = async () => {
   isSubmitting.value = true;
   clearInterval(timer);
 
-  const studentId = 123; // TODO: 替换为实际学生ID
 
   if (!paperInfo.value || !paperInfo.value.paperId || !paperInfo.value.courseId) {
     alert("试卷信息不完整，无法提交。");
@@ -397,7 +400,7 @@ const submitExam = async () => {
   const dto = {
     paperId: paperInfo.value.paperId,
     courseId: paperInfo.value.courseId,
-    studentId: studentId,
+    studentId: studentId.value,
     answers: answersPayload,
     startTime:startTime.value,
     finishTime:getCurrentTime()
@@ -422,7 +425,7 @@ const submitExam = async () => {
       localStorage.removeItem(`startTime-${paperInfo.value.paperId}-${paperInfo.value.courseId}`); // 也清除开始时间
       console.log('localStorage已清除');
     }
-    await router.push('/student/dashboard');
+    await router.push('/testing/student/dashboard');
   } catch (error) {
     alert(`提交失败：${error.message}，请稍后重试。`);
     console.error(error);

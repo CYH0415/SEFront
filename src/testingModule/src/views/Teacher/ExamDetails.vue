@@ -139,7 +139,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-const url_front = 'http://localhost:8080/';
+const url_front = 'http://localhost:8082/';
 
 const isLoading = ref(true);
 const paperInfo = ref(null);
@@ -188,7 +188,7 @@ const fetchPaperQuestions = async (paperId, courseId) => {
 const fetchResultAnalysis = async (paperId, courseId) => {
   try {
     const params = new URLSearchParams({ courseId: String(courseId), paperId: String(paperId) });
-    const url = url_front`api/exam/search-exam-for-all?${params}`;
+    const url = url_front + `api/exam/search-exam-for-all?${params}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`获取题目分析失败 (${res.status})`);
     const data = await res.json();
@@ -222,7 +222,7 @@ onMounted(async () => {
 
   if (isNaN(paperIdParam) || isNaN(courseIdParam)) {
     alert('无效的考试ID或课程ID');
-    router.push('/teacher/exam-management');
+    router.push('/testing/teacher/exam-management');
     isLoading.value = false;
     return;
   }
@@ -335,11 +335,11 @@ const formatDate = (dateString) => {
 };
 
 const goBack = () => {
-  router.push('/teacher/exam-management');
+  router.push('/testing/teacher/exam-management');
 };
 const intoStudentScore = () => {
   if (paperInfo.value) {
-    router.push(`/teacher/exam-details-student-score/${paperInfo.value.courseId}/${paperInfo.value.paperId}`);
+    router.push(`/testing/teacher/exam-details-student-score/${paperInfo.value.courseId}/${paperInfo.value.paperId}`);
   } else {
     alert("无法获取试卷信息，无法跳转。");
   }

@@ -25,11 +25,11 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const goToManualPaper = () => {
-  router.push('/teacher/create-paper/manual')
+  router.push('/testing/teacher/create-paper/manual')
 }
 
 const goToAutoPaper = () => {
-  router.push('/teacher/create-paper/auto')
+  router.push('/testing/teacher/create-paper/auto')
 }
 </script>
 
@@ -142,19 +142,19 @@ const goToAutoPaper = () => {
     grid-template-columns: 1fr;
     padding: 0;
   }
-  
+
   .option-block {
     padding: var(--spacing-lg);
   }
-  
+
   .card-icon {
     font-size: 2.5rem;
   }
-  
+
   .section-title {
     font-size: 1.3rem;
   }
-  
+
   .card-description {
     font-size: 0.95rem;
   }
