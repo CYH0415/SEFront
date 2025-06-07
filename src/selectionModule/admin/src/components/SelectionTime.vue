@@ -61,7 +61,6 @@ export default {
         const successMessage = await response.text();
         alert(successMessage);
       }
-      this.primaryStart = this.primaryEnd = this.supplementaryStart = this.supplementaryEnd = "";
     }
   }
 };
