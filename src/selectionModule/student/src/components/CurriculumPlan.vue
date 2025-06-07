@@ -100,7 +100,7 @@ export default {
     fetchCourses() {
       const userId = 1; // 默认userId为1，需要更改！
       // 获取课程数据
-      fetch('http://localhost:8080/student/getAllCourses')
+      fetch('http://localhost:8083/student/getAllCourses')
         .then(response => {
           if (!response.ok) {
             throw new Error('网络响应失败');
@@ -144,7 +144,7 @@ export default {
       try {
         const courseIds = this.selectedCourses.map(course => course.courseId);
         console.log('Selected courses:', courseIds);
-        const response = await fetch('http://localhost:8080/student/setPersonalCurriculum', {
+        const response = await fetch('http://localhost:8083/student/setPersonalCurriculum', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -183,7 +183,7 @@ export default {
       try {
         const courseIds = this.selectedCourses.map(course => course.courseId);
         console.log('Selected courses for removal:', courseIds);
-        const response = await fetch('http://localhost:8080/student/removePersonalCurriculum', {
+        const response = await fetch('http://localhost:8083/student/removePersonalCurriculum', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -221,7 +221,7 @@ export default {
       const userId = 1; // 默认userId为1，需要更改！
       const courseId = course.courseId;
       try {
-        const response = await fetch(`http://localhost:8080/student/getCourseStatus?userId=${userId}&courseId=${courseId}`);
+        const response = await fetch(`http://localhost:8083/student/getCourseStatus?userId=${userId}&courseId=${courseId}`);
         if (!response.ok) {
           throw new Error('获取课程状态失败');
         }

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Section from '../sectionModule/src/App.vue'
 import { userStore } from "../infoModule/src/store/user.ts";
+import { getCurrentUserId, getCurrentUserType } from '../infoModule/src/function/CurrentUser.ts';
 
 // Section Module imports
 import AutoSchedule from '../sectionModule/src/pages/AutoSchedule.vue'
@@ -67,14 +68,21 @@ import HelpSelect from '../selectionModule/admin/src/components/HelpSelect.vue'
 const TeacherRequest = () => import('../sectionModule/src/pages/TeacherRequest.vue')
 
 const routes = [
-  { path: '/', name: 'Home', component: Home }, // 主页，显示导航界面
+  { 
+    path: '/', 
+    name: 'Home', 
+    component: Home,
+    meta: {
+      allowedRoles: ['admin', 'teacher', 'student'] // 主页允许所有用户类型访问
+    }
+  },
   // 全局登录路由
   {
     path: '/login',
     name: 'Login', // 新的全局登录路由名称
     component: Login, // 使用 Info Module 中的 Login 组件
     meta: {
-      public: true // 标记为公共页面，不需要登录
+      
     }
   },
   {
@@ -83,8 +91,8 @@ const routes = [
     component: Section,
     children: [
     //   { path: '', redirect: 'resource-manage' },
-      { path: 'resource-manage', name: 'ResourceManage', component: ResourceManage },
-      { path: 'auto-schedule', name: 'AutoSchedule', component: AutoSchedule },
+      { path: 'resource-manage', name: 'ResourceManage', component: ResourceManage, meta: { allowedRoles: ['admin'] } },
+      { path: 'auto-schedule', name: 'AutoSchedule', component: AutoSchedule, meta: { allowedRoles: ['admin'] } },
       {
         path: 'manual-adjust',
         name: 'ManualAdjust',
@@ -94,20 +102,23 @@ const routes = [
             path: 'teacher-request',
             name: 'TeacherRequest',
             component: TeacherRequest,
+            meta: { allowedRoles: ['teacher'] }
           },
           {
             path: 'teacher-review',
             name: 'TeacherReview',
             component: ManualAdjust,
+            meta: { allowedRoles: ['admin'] }
           },
           {
             path: 'admin-adjust',
             name: 'AdminManualAdjust',
             component: AdminManualAdjust,
+            meta: { allowedRoles: ['admin'] }
           }
         ]
       },
-      { path: 'result-query', name: 'ResultQuery', component: ResultQuery },
+      { path: 'result-query', name: 'ResultQuery', component: ResultQuery, meta: { allowedRoles: ['admin', 'teacher', 'student'] } },
     ]
   },
   // Info Module routes
@@ -218,23 +229,63 @@ export const router = createRouter({
 
 // 全局导航守卫
 // 参数from加下划线，标注为故意未使用
-router.beforeEach((to, _from, next) => {
-  const store = userStore(); // 获取 Pinia store 实例
-  const isLoggedIn = store.isLoggedIn;
+router.beforeEach(async (to, _from, next) => {
+  try {
+    const uid = await getCurrentUserId();
+    const utype = await getCurrentUserType();
 
-  // 检查目标路由是否标记为公共页面 (例如登录页本身)
-  const isPublicPage = to.matched.some(record => record.meta.public);
+    console.log("U info: ", { uid, utype });
 
-  if (!isPublicPage && !isLoggedIn) {
-    // 如果访问的不是公共页面且用户未登录，则重定向到登录页
-    // 将用户尝试访问的路径作为查询参数传递，以便登录后可以重定向回来
+    const isLoggedIn = (uid !== null && utype !== null);
+
+    console.log("IsLoggedIn:" + isLoggedIn);
+
+    // 如果用户未登录，重定向到登录页
+    if (!isLoggedIn) {
+      return next({ path: '/login', query: { redirect: to.fullPath } });
+    }
+
+    // 如果用户已登录且尝试访问登录页，则重定向到主页
+    if (to.path === '/login') {
+      return next({ path: '/' });
+    }
+
+    // 检查用户类型权限
+    const allowedRoles = to.matched
+      .map(record => record.meta.allowedRoles)
+      .filter(roles => roles && Array.isArray(roles))
+      .flat();
+
+    // 如果路由没有定义允许的角色，默认允许所有已登录用户访问
+    if (allowedRoles.length === 0) {
+      return next();
+    }    // 将meta中的小写角色转换为大写格式进行比较
+    const convertedRoles = allowedRoles.map((role: any) => {
+      switch (role.toLowerCase()) {
+        case 'admin':
+          return 'ROLE_ADMIN';
+        case 'teacher':
+          return 'ROLE_TEACHER';
+        case 'student':
+          return 'ROLE_STUDENT';
+        default:
+          return role; // 如果不匹配，保持原样
+      }
+    });
+
+    // 检查当前用户类型是否在允许的角色列表中
+    if (convertedRoles.includes(utype)) {
+      return next();
+    } else {
+      // 用户类型不匹配，重定向到主页或显示无权限页面
+      console.warn(`用户类型 ${utype} 无权访问路由 ${to.path}`);
+      window.alert(`您没有权限访问此页面: ${to.path}`);
+      return next({ path: _from.path });
+    }
+
+  } catch (error) {
+    console.error('获取用户信息失败:', error);
+    // 如果获取用户信息失败，重定向到登录页
     return next({ path: '/login', query: { redirect: to.fullPath } });
   }
-
-  if (isLoggedIn && to.path === '/login') {
-    // 如果用户已登录且尝试访问登录页，则重定向到主页
-    return next({ path: '/' }); // 或者您希望的默认已登录页面，如 '/information-manage'
-  }
-
-  next(); // 其他情况正常放行
 });

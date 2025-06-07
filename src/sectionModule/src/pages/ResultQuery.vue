@@ -1,10 +1,21 @@
 <template>
   <div class="result-query">
-    <el-card>
-      <!-- 搜索栏 -->
+    <el-card>      <!-- 搜索栏 -->
       <div class="search-bar">
-        <el-input v-model="filters.teacherId" placeholder="教师ID" style="width: 140px" clearable />
-        <el-input v-model="filters.classroomId" placeholder="教室ID" style="width: 140px" clearable />
+        <el-input 
+          v-if="isAdmin" 
+          v-model="filters.teacherId" 
+          placeholder="教师ID" 
+          style="width: 140px" 
+          clearable 
+        />
+        <el-input 
+          v-if="isAdmin" 
+          v-model="filters.classroomId" 
+          placeholder="教室ID" 
+          style="width: 140px" 
+          clearable 
+        />
         <el-input-number v-model="filters.year" :min="2000" :max="2100" placeholder="学年" style="width: 120px" />
         <el-select v-model="filters.semester" placeholder="学期" style="width: 120px">
           <el-option label="Spring" value="Spring" />
@@ -46,9 +57,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '../utils/request'
+import { getCurrentUserId, getCurrentUserType } from '../../../infoModule/src/function/CurrentUser'
+
+// 用户信息
+const currentUserId = ref<number | null>(null)
+const currentUserType = ref<string | null>(null)
+const isAdmin = ref<boolean>(false)
+
+// 初始化用户信息
+onMounted(async () => {
+  try {
+    currentUserId.value = await getCurrentUserId()
+    currentUserType.value = await getCurrentUserType()
+    isAdmin.value = currentUserType.value === 'admin'
+    
+    console.log('当前用户信息:', { 
+      userId: currentUserId.value, 
+      userType: currentUserType.value, 
+      isAdmin: isAdmin.value 
+    })
+    
+    // 如果是教师，自动填入教师ID
+    if (!isAdmin.value && currentUserId.value) {
+      filters.teacherId = currentUserId.value.toString()
+    }
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+  }
+})
 
 const filters = reactive({
   teacherId: '',
@@ -65,18 +104,39 @@ const handleSearch = async () => {
     ElMessage.warning('请选择学年和学期')
     return
   }
-  if (!filters.teacherId && !filters.classroomId) {
-    ElMessage.warning('教师ID和教室ID不能同时为空')
-    return
+  
+  // 管理员需要输入教师ID或教室ID，教师自动使用当前用户ID
+  if (isAdmin.value) {
+    if (!filters.teacherId && !filters.classroomId) {
+      ElMessage.warning('教师ID和教室ID不能同时为空')
+      return
+    }
+  } else {
+    // 教师用户，确保使用当前用户ID
+    if (currentUserId.value) {
+      filters.teacherId = currentUserId.value.toString()
+    } else {
+      ElMessage.error('无法获取当前用户信息')
+      return
+    }
   }
-  try {    const res = await request.get('/search/section', {
-      params: {
-        teacherId: filters.teacherId || undefined,
-        classroomId: filters.classroomId || undefined,
-        year: filters.year,
-        semester: filters.semester
-      }
-    })
+    try {
+    const params: any = {
+      year: filters.year,
+      semester: filters.semester
+    }
+    
+    // 根据用户类型设置不同的查询参数
+    if (isAdmin.value) {
+      // 管理员可以查询教师ID或教室ID
+      if (filters.teacherId) params.teacherId = filters.teacherId
+      if (filters.classroomId) params.classroomId = filters.classroomId
+    } else {
+      // 教师只能查询自己的课程，使用当前用户ID
+      params.teacherId = filters.teacherId
+    }
+    
+    const res = await request.get('/search/section', { params })
     buildCourseMap(res.data.data || [])
   } catch (err) {
     ElMessage.error('查询失败')

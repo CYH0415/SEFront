@@ -103,11 +103,11 @@ const navigateTo = (path) => {
   .actions {
     grid-template-columns: 1fr;
   }
-  
+
   .action-card {
     padding: var(--spacing-md);
   }
-  
+
   .card-icon {
     font-size: 2rem;
   }
