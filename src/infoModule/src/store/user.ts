@@ -10,9 +10,12 @@ interface UserState {
     error: string | null;
 }
 
+// !! 重要: 这是一个用于前端测试的模拟标志。记得在连接真实后端时移除或设为 false !!
+const MOCK_BACKEND = true; // <--- 添加一个开关来控制模拟行为
+
 export const userStore = defineStore('user', {
     state: (): UserState => ({
-        token: localStorage.getItem('token') || null, // 初始化时从 localStorage 加载 token
+        token: localStorage.getItem('token') || null,
         loading: false,
         error: null,
     }),
@@ -23,15 +26,14 @@ export const userStore = defineStore('user', {
     },
 
     actions: {
-        // 内部方法：设置 token
         setToken(token: string) {
             this.token = token;
             localStorage.setItem('token', token);
+            // 在模拟时，我们可能不需要设置 axios 默认头部，但保留也无妨
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             this.error = null;
         },
 
-        // 内部方法：清除 token
         clearToken() {
             this.token = null;
             localStorage.removeItem('token');
@@ -41,73 +43,115 @@ export const userStore = defineStore('user', {
         async login(credentials: { accountNumber: string; password: string }): Promise<boolean> {
             this.loading = true;
             this.error = null;
-            try {
-                // 假设您的登录API是 /api/auth/login
-                // 并且成功时返回 { token: string } 或包含 token 的对象
-                const response = await axios.post<{ token: string }>('/api/auth/login', credentials); // 假设返回体中直接有 token 字段
-                const { token } = response.data;
 
-                if (token) {
-                    this.setToken(token);
+            if (MOCK_BACKEND) {
+                // 模拟后端响应
+                return new Promise((resolve) => {
+                    setTimeout(() => { // 模拟网络延迟
+                        // 根据特定凭据模拟成功或失败
+                        if (credentials.accountNumber === 'testuser' && credentials.password === 'password') {
+                            const fakeToken = 'mock-jwt-token-12345';
+                            this.setToken(fakeToken);
+                            ElMessage.success('模拟登录成功！');
 
-                    // 登录成功后的跳转逻辑可以保留，但不再依赖用户信息
-                    const redirectPath = router.currentRoute.value.query.redirect as string;
-                    if (redirectPath && redirectPath !== '/login' && redirectPath !== '/') {
-                        router.push(redirectPath);
+                            /*const redirectPath = router.currentRoute.value.query.redirect as string;
+                            if (redirectPath && redirectPath !== '/login' && redirectPath !== '/') {
+                                router.push(redirectPath);
+                            } else {
+                                router.push('/'); // 默认跳转
+                            }*/
+                            resolve(true);
+                        } else {
+                            this.error = '模拟登录失败：账号或密码错误。';
+                            this.clearToken();
+                            ElMessage.error(this.error);
+                            resolve(false);
+                        }
+                        this.loading = false;
+                    }, 1000); // 1秒延迟
+                });
+            } else {
+                // 原始的后端请求逻辑
+                try {
+                    const response = await axios.post<{ token: string }>('/api/auth/login', credentials);
+                    const { token } = response.data;
+
+                    if (token) {
+                        this.setToken(token);
+                        const redirectPath = router.currentRoute.value.query.redirect as string;
+                        if (redirectPath && redirectPath !== '/login' && redirectPath !== '/') {
+                            router.push(redirectPath);
+                        } else {
+                            router.push('/information-manage');
+                        }
+                        return true;
                     } else {
-                        router.push('/information-manage'); // 默认跳转
+                        this.error = '登录响应数据中未找到Token';
+                        this.clearToken();
+                        return false;
                     }
-                    return true;
-                } else {
-                    this.error = '登录响应数据中未找到Token';
+                } catch (error: any) {
+                    console.error('登录失败:', error);
                     this.clearToken();
+                    if (error.response && error.response.data && error.response.data.message) {
+                        this.error = error.response.data.message;
+                    } else {
+                        this.error = '账号或密码错误，或服务器无响应。';
+                    }
                     return false;
+                } finally {
+                    this.loading = false;
                 }
-            } catch (error: any) {
-                console.error('登录失败:', error);
-                this.clearToken();
-                if (error.response && error.response.data && error.response.data.message) {
-                    this.error = error.response.data.message;
-                } else {
-                    this.error = '账号或密码错误，或服务器无响应。';
-                }
-                return false;
-            } finally {
-                this.loading = false;
             }
         },
 
         logout() {
             this.clearToken();
-            router.push('/login'); // 跳转到登录页
             ElMessage.success('已成功退出登录');
         },
 
-        // 如果还需要通过 token 验证会话有效性，可以保留一个简化版的 action
-        // 否则，如果不需要，这个 action 也可以移除
         async validateCurrentToken(): Promise<boolean> {
-            if (!this.token) {
-                this.clearToken();
-                return false;
-            }
-            this.loading = true;
-            try {
-                // 示例：假设有一个 /api/auth/validate-token 接口，仅用于验证token有效性
-                // 如果验证通过，什么都不做；如果失败（例如返回401），则清除token
-                await axios.get('/api/auth/validate-token'); // 不需要返回值，只要请求成功即可
-                axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`; // 确保axios的header是最新的
-                this.error = null;
-                return true;
-            } catch (error) {
-                console.error('Token 验证失败:', error);
-                this.clearToken(); // Token 无效，清除会话
-                // 根据错误类型，可能需要重定向到登录页
-                if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
-                    router.push('/login');
+            if (MOCK_BACKEND) {
+                // 模拟 token 验证
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        if (this.token && this.token.startsWith('mock-jwt-token')) {
+                            // 假设所有以 'mock-jwt-token' 开头的 token 都有效
+                            console.log('模拟Token验证成功');
+                            this.error = null;
+                            resolve(true);
+                        } else {
+                            console.log('模拟Token验证失败');
+                            this.clearToken();
+                            // 如果路由守卫依赖此结果，可能需要在此处重定向，但通常守卫会处理
+                            // router.push('/login');
+                            resolve(false);
+                        }
+                        this.loading = false;
+                    }, 500);
+                });
+            } else {
+                // 原始的后端请求逻辑
+                if (!this.token) {
+                    this.clearToken();
+                    return false;
                 }
-                return false;
-            } finally {
-                this.loading = false;
+                this.loading = true;
+                try {
+                    await axios.get('/api/auth/validate-token');
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+                    this.error = null;
+                    return true;
+                } catch (error) {
+                    console.error('Token 验证失败:', error);
+                    this.clearToken();
+                    if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
+                        router.push('/login');
+                    }
+                    return false;
+                } finally {
+                    this.loading = false;
+                }
             }
         }
     },

@@ -94,7 +94,7 @@
 import {ref, onMounted, watch} from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import axios from 'axios'
-import { useRoute } from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import { userStore } from "./store/user.ts";
 import {getCurrentUserId} from "./function/CurrentUser.ts";
 
@@ -128,6 +128,7 @@ const form = ref<UserDTO>({
 })
 
 const route = useRoute();
+const router = useRouter();
 const username = ref('')
 const dropdownVisible = ref(false)
 const dialogVisible = ref(false)
@@ -213,6 +214,7 @@ const saveUser = async () => {
 const logout = () => {
   alert('退出登录');
   userStore().logout();
+  router.push('/login');
 }
 </script>
 

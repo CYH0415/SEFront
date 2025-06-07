@@ -139,38 +139,15 @@ onMounted(async () => {
     gradeList.value = Array.from(coursesMap.values());
   } catch (error) {
     console.error('获取成绩数据失败', error);
-    // 使用默认数据以演示目的
-    gradeList.value = [
-      {
-        courseId: 101,
-        courseName: '计算机科学导论',
-        tasks: [
-          { name: '平时作业', score: 91, weight: 0.2 },
-          { name: '平时测验', score: 85, weight: 0.3 },
-          { name: '期中考试', score: 88, weight: 0.2 },
-          { name: '期末考试', score: 95, weight: 0.3 }
-        ],
-      },
-      {
-        courseId: 102,
-        courseName: '数据结构',
-        tasks: [
-          { name: '平时作业', score: 88, weight: 0.2 },
-          { name: '平时测验', score: 90, weight: 0.3 },
-          { name: '期中考试', score: 82, weight: 0.2 },
-          { name: '期末考试', score: 95, weight: 0.3 }
-        ],
-      }
-    ];
   }
 });
 
 // 工具函数：转换任务类型为中文
 const translateTaskType = (type: 'attending' | 'homework' | 'test'): string => {
   const typeMap: Record<string, string> = {
-    'attending': '平时作业',
-    'homework': '平时测验',
-    'test': '考试'
+    'attending': '出勤成绩',
+    'homework': '作业成绩',
+    'test': '测试成绩'
   };
   return typeMap[type] || type;
 };

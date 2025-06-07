@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Section from '../sectionModule/src/App.vue'
+import { userStore } from "../infoModule/src/store/user.ts";
 
 // Section Module imports
 import AutoSchedule from '../sectionModule/src/pages/AutoSchedule.vue'
@@ -67,7 +68,16 @@ const TeacherRequest = () => import('../sectionModule/src/pages/TeacherRequest.v
 
 const routes = [
   { path: '/', name: 'Home', component: Home }, // 主页，显示导航界面
-  { 
+  // 全局登录路由
+  {
+    path: '/login',
+    name: 'Login', // 新的全局登录路由名称
+    component: Login, // 使用 Info Module 中的 Login 组件
+    meta: {
+      public: true // 标记为公共页面，不需要登录
+    }
+  },
+  {
     path: '/section', 
     name: 'Section', 
     component: Section,
@@ -106,8 +116,7 @@ const routes = [
     name: 'Info', 
     component: InfoApp,
     children: [
-    //   { path: '', redirect: 'login' },
-      { path: 'login', name: 'InfoLogin', component: Login },
+      //{ path: '', redirect: 'login' },
       { path: 'information-manage', name: 'InformationManage', component: InformationManage },
       { path: 'course-manage', name: 'CourseManage', component: CourseManage },
       { path: 'grade-query', name: 'GradeQuery', component: GradeQuery },
@@ -205,4 +214,27 @@ const routes = [
 export const router = createRouter({
   history: createWebHistory(),
   routes,
-})
+});
+
+// 全局导航守卫
+// 参数from加下划线，标注为故意未使用
+router.beforeEach((to, _from, next) => {
+  const store = userStore(); // 获取 Pinia store 实例
+  const isLoggedIn = store.isLoggedIn;
+
+  // 检查目标路由是否标记为公共页面 (例如登录页本身)
+  const isPublicPage = to.matched.some(record => record.meta.public);
+
+  if (!isPublicPage && !isLoggedIn) {
+    // 如果访问的不是公共页面且用户未登录，则重定向到登录页
+    // 将用户尝试访问的路径作为查询参数传递，以便登录后可以重定向回来
+    return next({ path: '/login', query: { redirect: to.fullPath } });
+  }
+
+  if (isLoggedIn && to.path === '/login') {
+    // 如果用户已登录且尝试访问登录页，则重定向到主页
+    return next({ path: '/' }); // 或者您希望的默认已登录页面，如 '/information-manage'
+  }
+
+  next(); // 其他情况正常放行
+});
