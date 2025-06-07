@@ -14,7 +14,7 @@
           <el-table-column prop="title" label="课程名" width="200">
           <template #default="{ row }">
             <router-link :to="{ 
-              name: 'CourseDetail', 
+              name: 'SharingCourseDetail', 
               params: { sectionId: row.sectionId },
             }">{{ row.title }}</router-link>
           </template>
