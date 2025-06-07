@@ -6,12 +6,12 @@ import GradeModify from "../components/GradeModify.vue";
 import GradeAnalyze from "../components/GradeAnalyze.vue";
 
 const routes = [
-    { path: '/', redirect: '/information-manage' },
-    { path: "/information-manage", component: InformationManage },
-    { path: "/course-manage", component: CourseManage },
-    { path: "/grade-query", component: GradeQuery },
-    { path: "/grade-modify", component: GradeModify },
-    { path: "/grade-analyze", component: GradeAnalyze }
+    { path: '/', redirect: '/info/information-manage' },
+    { path: "/info/information-manage", component: InformationManage },
+    { path: "/info/course-manage", component: CourseManage },
+    { path: "/info/grade-query", component: GradeQuery },
+    { path: "/info/grade-modify", component: GradeModify },
+    { path: "/info/grade-analyze", component: GradeAnalyze }
 ];
 
 const router = createRouter({
