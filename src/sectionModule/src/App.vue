@@ -46,6 +46,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getCurrentUserName } from '../../infoModule/src/function/CurrentUser'
+import { userStore } from '../../infoModule/src/store/user'
+import { useRouter } from 'vue-router'
 
 const username = ref('加载中...')  // 初始显示加载中
 const dropdownVisible = ref(false)
@@ -75,8 +77,10 @@ const toggleDropdown = () => {
 
 // 点击退出登录
 const logout = () => {
+  const router = useRouter()
   alert('退出登录')
-  // 这里可以添加真正的退出逻辑，比如跳转到登录页
+  userStore().logout()
+  router.push('/login')  // 跳转到登录页面
 }
 
 // 切换课程安排子系统菜单
