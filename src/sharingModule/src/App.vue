@@ -7,22 +7,6 @@
     </aside>
 
     <main class="content">
-      <!-- ⭐ 顶栏，右上角用户模块 -->
-      <div class="top-bar">
-        <div class="user-area" @click="toggleDropdown">
-          <img src="https://i.pravatar.cc/40" alt="头像" class="avatar" />
-          <span class="username">{{ username }}</span>
-          <svg class="arrow" viewBox="0 0 1024 1024" width="12" height="12">
-            <path d="M512 672L192 352h640z" fill="#333" />
-          </svg>
-        </div>
-
-        <!-- 下拉菜单 -->
-        <div v-if="dropdownVisible" class="dropdown-menu">
-          <div class="dropdown-item" @click="logout">退出登录</div>
-        </div>
-      </div>
-
       <div class="page-container">
         <router-view :userId = "Number(userId)" :isStudent = "Boolean(isStudent)" v-if="isReady"></router-view>
       </div>
@@ -37,19 +21,6 @@ import { getCurrentUserId, getCurrentUserType } from '../../infoModule/src/funct
 const isStudent = ref(false);
 const userId = ref(2);
 const isReady = ref(false);
-const username = ref('教师');  // 这里可以以后从后端接口动态拿到
-const dropdownVisible = ref(false);
-
-// 点击头像区域切换下拉框
-const toggleDropdown = () => {
-  dropdownVisible.value = !dropdownVisible.value;
-}
-
-// 点击退出登录
-const logout = () => {
-  alert('退出登录');
-  // 这里可以添加真正的退出逻辑，比如跳转到登录页
-}
 
 onMounted(async() => {
   try{
