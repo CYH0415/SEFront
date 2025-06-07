@@ -185,12 +185,12 @@ const nopaperInfos = computed(() => {
 });
 
 const searchforinfo = (paperId, courseId) => {
-  router.push(`/teacher/exams_detail/${courseId}/${paperId}`);
+  router.push(`/testing/teacher/exams_detail/${courseId}/${paperId}`);
 };
 
 const gotostudentinfo = (paperInfo) => {
   // Passing mode=edit seems intentional from user's code, implies teacher might edit student scores/details
-  router.push(`/teacher/exam-details-student-score/${paperInfo.courseId}/${paperInfo.paperId}?mode=edit`);
+  router.push(`/testing/teacher/exam-details-student-score/${paperInfo.courseId}/${paperInfo.paperId}?mode=edit`);
 };
 
 const formatDate = (dateString) => {

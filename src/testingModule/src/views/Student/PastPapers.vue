@@ -46,7 +46,8 @@
           <span class="paper-year-badge">{{ paper.year }}</span>
         </div>
         <div class="paper-info">
-          <p><span class="info-label">科目：</span>hbgg抱歉没有这一项呢</p>
+          <p><span class="info-label">试卷名称：</span>{{paper.paperName }}</p>
+          <p><span class="info-label">科目：</span>先写死</p>
           <p><span class="info-label">总题数：</span>{{ paper.multipleChoiceNum+paper.singleChoiceNum+paper.trueFalseNum }} 题</p>
           <p><span class="info-label">总分：</span>{{ paper.totalScores }} 分</p>
         </div>
@@ -121,7 +122,7 @@ const viewPaperDetails = (paper) => {
   // 实际应用中，你可能需要传递paperId或其他唯一标识符
   // router.push({ name: 'PastPaperDetails', params: { id: paper.id }, state: { paperData: paper } });
   // console.log('paper',paper)
-  router.push(`/student/past-paper/${paper.courseId}/${paper.paperId}/details`); // Assuming this route exists
+  router.push(`/testing/student/past-paper/${paper.courseId}/${paper.paperId}/details`); // Assuming this route exists
   // console.log('Viewing paper:', paper.title);
 };
 

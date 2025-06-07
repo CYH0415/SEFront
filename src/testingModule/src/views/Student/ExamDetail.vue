@@ -111,7 +111,7 @@ onMounted(() => {
     exam.value = foundExam;
   } else {
     alert('考试不存在或加载失败');
-    router.push('/student/dashboard'); // 或者一个错误页面
+    router.push('/testing/student/dashboard'); // 或者一个错误页面
   }
   isLoading.value = false;
 });
@@ -157,7 +157,7 @@ const buttonText = computed(() => {
 
 const startTheExam = () => {
   if (isExamOngoing.value && exam.value) {
-    router.push(`/student/exam/${exam.value.id}/questions`);
+    router.push(`/testing/student/exam/${exam.value.id}/questions`);
   } else if (isExamEnded.value) {
     alert('本次考试已结束。');
   } else {

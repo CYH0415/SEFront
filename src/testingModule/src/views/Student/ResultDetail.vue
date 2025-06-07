@@ -118,7 +118,7 @@ onMounted(async () => {
 
   if (isNaN(paperId) || isNaN(courseId) || isNaN(studentId)) {
     alert('页面参数无效！');
-    router.push('/student/results'); // Or student dashboard
+    router.push('/testing/student/results'); // Or student dashboard
     isLoading.value = false;
     return;
   }
@@ -272,7 +272,7 @@ const goBack = () => {
   // Determine the correct "back" destination.
   // If coming from teacher's exam list, go there. If from student exam result list, go there.
   // For now, assuming a teacher view context based on previous pages.
-  router.push('/student/results'); // Default back for teacher
+  router.push('/testing/student/results'); // Default back for teacher
 };
 
 // Placeholder, as this page is for viewing, not editing scores directly without a modal

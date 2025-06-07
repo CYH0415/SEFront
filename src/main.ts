@@ -23,11 +23,17 @@ if (import.meta.env.DEV) {
 
     // 在这里定义您想默认登录的用户信息
     // 您可以随时修改 role 为 'student' 来以学生身份进入
+    // const defaultUser = {
+    //     token: 'dev-token-for-testing-only', // 模拟的令牌
+    //     role: 'teacher',                     // 角色: 'teacher' 或 'student'
+    //     username: '默认教师用户',             // 显示的用户名
+    //     userId: '19'                       // 用户ID
+    // };
     const defaultUser = {
         token: 'dev-token-for-testing-only', // 模拟的令牌
-        role: 'teacher',                     // 角色: 'teacher' 或 'student'
-        username: '默认教师用户',             // 显示的用户名
-        userId: 'T999'                       // 用户ID
+        role: 'student',                     // 角色: 'teacher' 或 'student'
+        username: '默认学生用户',             // 显示的用户名
+        userId: '3'                       // 用户ID
     };
 
     // 为了避免每次刷新都覆盖，可以检查token是否存在
