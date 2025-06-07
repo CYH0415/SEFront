@@ -142,19 +142,19 @@ const goToAutoPaper = () => {
     grid-template-columns: 1fr;
     padding: 0;
   }
-  
+
   .option-block {
     padding: var(--spacing-lg);
   }
-  
+
   .card-icon {
     font-size: 2.5rem;
   }
-  
+
   .section-title {
     font-size: 1.3rem;
   }
-  
+
   .card-description {
     font-size: 0.95rem;
   }
