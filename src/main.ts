@@ -15,6 +15,7 @@ const app = createApp(App)
 // --- 开发环境默认登录用户 ---
 // 这个 'if' 判断语句确保以下代码只在开发模式下运行，
 // 在最终打包上线（生产环境）时会被自动移除，保证了线上环境的安全性。
+
 // if (import.meta.env.DEV) {
 //     console.log(
 //         '%c[开发模式] 已启用默认用户自动登录。',
@@ -40,6 +41,7 @@ const app = createApp(App)
 //     }
 
 // }
+
 // --- 默认登录用户设置结束 ---
 
 app.use(pinia)

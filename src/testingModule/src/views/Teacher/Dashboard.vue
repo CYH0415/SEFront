@@ -4,25 +4,25 @@
     <p class="welcome-text">欢迎回来，{{ username }}，Do you have anything to tell me?</p>
 
     <div class="actions">
-      <div class="action-card" @click="navigateTo('/teacher/question-bank')">
+      <div class="action-card" @click="navigateTo('/testing/teacher/question-bank')">
         <div class="card-icon">📚</div>
         <h3 class="section-title">题库管理</h3>
         <p class="card-description">添加、编辑和删除试题</p>
       </div>
 
-      <div class="action-card" @click="navigateTo('/teacher/create-paper')">
+      <div class="action-card" @click="navigateTo('/testing/teacher/create-paper')">
         <div class="card-icon">📝</div>
         <h3 class="section-title">编辑发布试卷</h3>
         <p class="card-description">手动或自动组卷并发布考试</p>
       </div>
 
-      <div class="action-card" @click="navigateTo('/teacher/past-papers')">
+      <div class="action-card" @click="navigateTo('/testing/teacher/past-papers')">
         <div class="card-icon">📋</div>
         <h3 class="section-title">查看历年卷</h3>
         <p class="card-description">查看所有历史试卷及答案</p>
       </div>
 
-      <div class="action-card" @click="navigateTo('/teacher/exam-management')">
+      <div class="action-card" @click="navigateTo('/testing/teacher/exam-management')">
         <div class="card-icon">📊</div>
         <h3 class="section-title">考试情况管理</h3>
         <p class="card-description">查看已发布考试及学生答题情况</p>

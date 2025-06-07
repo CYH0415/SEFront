@@ -387,17 +387,17 @@ const overallNopaperInfos = computed(() => { // Renamed from nopaperInfos for cl
 const gotoedit = (paperInfo) => {
   router.push({
     // name: 'ManualCreatePaperEdit', // Using path if name is not set up
-    path: `/teacher/create-paper/manual-edit/${paperInfo.courseId}/${paperInfo.paperId}`,
+    path: `/testing/teacher/create-paper/manual-edit/${paperInfo.courseId}/${paperInfo.paperId}`,
     query: { mode: 'edit' },
     state: { paperInfo: JSON.parse(JSON.stringify(paperInfo)) }
   });
 };
 
 const searchforinfo = (paperId, courseId) => {
-  router.push(`/teacher/exams_detail/${courseId}/${paperId}`);
+  router.push(`/testing/teacher/exams_detail/${courseId}/${paperId}`);
 };
 const viewOngoingDetails = (paperInfo) => {
-  router.push(`/teacher/exams_detail/${paperInfo.courseId}/${paperInfo.paperId}?status=ongoing`);
+  router.push(`/testing/teacher/exams_detail/${paperInfo.courseId}/${paperInfo.paperId}?status=ongoing`);
 };
 
 const deletepaperInfo = async (paperInfo) => {
