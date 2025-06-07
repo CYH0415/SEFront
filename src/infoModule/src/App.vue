@@ -25,6 +25,9 @@
             <router-link to="/info/grade-analyze">成绩分析</router-link>
           </el-menu-item>
         </el-sub-menu>
+        <el-menu-item index="4">
+          <router-link to="/info/show-section">教师课程详情查询</router-link>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
