@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import {getCurrentUserId} from '/src/infoModule/src/function/CurrentUser.ts'
 export default {
   data() {
     return {

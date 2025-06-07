@@ -3,13 +3,14 @@
     <aside class="sidebar">
       <h2>教师信息系统</h2>
       <nav>
-        <RouterLink :to="{ name: 'CourseResultT', params: { userId: '5' } }" :class="{ active: $route.name === 'CourseResultT' }">查看选课结果</RouterLink>
+        <RouterLink v-if="teacherId" :to="{ name: 'CourseResultT', params: { userId: teacherId } }" :class="{ active: $route.name === 'CourseResultT' }">
+          查看选课结果
+        </RouterLink>
       </nav>
     </aside>
     <main class="content">
       <div class="top-bar">
         <div class="user-area" @click="toggleDropdown">
-          <img src="https://i.pravatar.cc/40" alt="头像" class="avatar" />
           <span class="username">教师姓名</span>
           <svg class="arrow" viewBox="0 0 1024 1024" width="12" height="12">
             <path d="M512 672L192 352h640z" fill="#333" />
@@ -25,13 +26,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { computed ,ref,onMounted} from 'vue';
+import { useRouter } from 'vue-router';
+// 1. 导入你的 userStore
+import { userStore } from '../../../infoModule/src/store/user.ts';
+import { getCurrentUserId } from '../../../infoModule/src/function/CurrentUser.ts';
 
 const router = useRouter();
-const route = useRoute();
+// 2. 创建 store 实例
+const store = userStore();
+const teacherId = ref(null)
+onMounted(async () => {
 
-const isDropdownVisible = ref(false);
+  teacherId.value = await getCurrentUserId();
+});
+
+
+const isDropdownVisible = ref(false); // Make sure to import ref if you use it here.
+// If you removed ref, add it back: import { ref, computed } from 'vue';
 
 const toggleDropdown = () => {
   isDropdownVisible.value = !isDropdownVisible.value;
@@ -41,12 +53,12 @@ const closeDropdown = () => {
   isDropdownVisible.value = false;
 };
 
-import {userStore} from '/src/infoModule/src/store/user.ts';
 const logout = () => {
   alert('退出登录');
   userStore().logout();
-  router.push('/login');
+  router.push('/login'); // Assuming you have a /login route
 };
+
 </script>
 
 <style scoped>
