@@ -19,7 +19,7 @@ const showNavigation = computed(() => route.path === '/')
       
       <div class="module-grid">
         <div class="module-card">
-          <router-link to="/section/resource-manage" class="module-link">
+          <router-link to="/section" class="module-link">
             <div class="module-icon">📚</div>
             <h3>课程安排子系统</h3>
             <p>教学资源管理、自动排课、手动调整、排课结果查询</p>
