@@ -1,5 +1,5 @@
 <template>
-  <div class="student-exam-result-page"> 
+  <div class="student-exam-result-page">
     <div class="page-actions-bar">
       <button class="btn secondary-outline-btn back-btn" @click="goBack">
         <i class="icon-back-arrow"></i> 返回列表
@@ -14,7 +14,7 @@
       </div>
     </div>
 
-    <div class="question-list-section"> 
+    <div class="question-list-section">
       <h2 class="section-title">题目及作答详情</h2>
       <div v-if="isLoading" class="loading-indicator"><p>加载中...</p></div>
       <div v-else-if="processedRecords.length > 0" class="questions-container">
@@ -90,7 +90,7 @@ const isLoading = ref(true);
 const paperInfo = ref(null);
 const examresult = ref(null);
 const records = ref(null); // Will store { studentId, ..., detailedResults: [] }
-const url_front = 'http://localhost:8080/';
+const url_front = 'http://localhost:8082/';
 
 // const isedit = ref(route.query.mode === 'edit'); // From your original code if needed for "上传成绩"
 
@@ -272,7 +272,7 @@ const goBack = () => {
   // Determine the correct "back" destination.
   // If coming from teacher's exam list, go there. If from student exam result list, go there.
   // For now, assuming a teacher view context based on previous pages.
-    router.push('/student/results'); // Default back for teacher
+  router.push('/student/results'); // Default back for teacher
 };
 
 // Placeholder, as this page is for viewing, not editing scores directly without a modal
