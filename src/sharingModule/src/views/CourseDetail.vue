@@ -1,5 +1,5 @@
 <template>
-  <div class="course-detail">
+  <div class="course-detail" v-if="ableToVisit">
     <!-- 课程详情的标题和描述 -->
     <div class="header">
       <h1> {{ formattedSectionInfo }} </h1>
@@ -82,6 +82,8 @@ const props = defineProps({
   }
 });
 
+const ableToVisit = ref(false);
+
 const sectionId = computed(() => route.params.sectionId); // 使用 computed 来动态获取 courseId 参数
 const sectionInfo = ref({}); // 课程信息数据
 const isAttendanceVisible = ref(false); // 考勤窗口开关
@@ -109,23 +111,28 @@ const formattedSectionInfo = computed(() => {
   return [title, `${year}年${semester}学期`, time].filter(Boolean).join(' | ');
 });
 
-// 查询课程信息
-async function getSectionInfo() {
+// 页面渲染前调用的生命周期函数
+onMounted(async () => {
   const response = await api.get('/section', {
     params: {
-      sectionId: sectionId.value
+      sectionId: sectionId.value,
+      userId: props.userId,
+      isStudent: props.isStudent
     }
   });
   if (response.code) {
-    return response.data;
+    sectionInfo.value = response.data;
+    ableToVisit.value = true;
   } else {
+    if (response.message && response.message === 'case1') {
+      ElMessage.error('您无权访问本课程!');
+      router.push({
+        name: 'SharingCourseList',
+      });
+      return;
+    }
     ElMessage.error('课程详情获取失败!' + response.message);
   }
-}
-
-// 页面渲染前调用的生命周期函数
-onMounted(async () => {
-  sectionInfo.value = await getSectionInfo();
 });
 
 // 打开考勤录入弹窗
