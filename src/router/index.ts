@@ -127,11 +127,11 @@ const routes = [
     component: InfoApp,
     children: [
       //{ path: '', redirect: 'login' },
-      { path: 'information-manage', name: 'InformationManage', component: InformationManage },
-      { path: 'course-manage', name: 'CourseManage', component: CourseManage },
-      { path: 'grade-query', name: 'GradeQuery', component: GradeQuery },
-      { path: 'grade-modify', name: 'GradeModify', component: GradeModify },
-      { path: 'grade-analyze', name: 'GradeAnalyze', component: GradeAnalyze }
+      { path: 'information-manage', name: 'InformationManage', component: InformationManage, meta: { allowedRoles: ['admin']} },
+      { path: 'course-manage', name: 'CourseManage', component: CourseManage, meta: { allowedRoles: ['admin', 'teacher', 'student']} },
+      { path: 'grade-query', name: 'GradeQuery', component: GradeQuery, meta: { allowedRoles: ['student'] }},
+      { path: 'grade-modify', name: 'GradeModify', component: GradeModify, meta: { allowedRoles: ['admin', 'teacher']} },
+      { path: 'grade-analyze', name: 'GradeAnalyze', component: GradeAnalyze, meta: { allowedRoles: ['teacher', 'student']}}
     ]
   },
   // Testing Module routes

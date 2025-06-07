@@ -23,7 +23,7 @@
         </router-link>
         <router-link :to="{ name: 'CurriculumPlan' }" :class="{ active: $route.name === 'CurriculumPlan' }">定制培养方案</router-link>
         <router-link :to="{ name: 'CourseInfoS' }" :class="{ active: $route.name === 'CourseInfoS' }">查询课程信息</router-link>
-        <router-link :to="{ name: 'CourseSelectS' }" :class="{ active: $route.name === 'CourseSelectS' }">选择课程</router-link>
+        <router-link :to="{ name: 'CourseSelectS', params: { userId: currentUserId } }" :class="{ active: $route.name === 'CourseSelectS' }">选择课程</router-link>
       </nav>
     </aside>
     <main class="content">
@@ -80,10 +80,10 @@ const toggleDropdown = () => {
 const closeDropdown = () => {
   isDropdownVisible.value = false;
 };
-
+import {userStore} from '/src/infoModule/src/store/user.ts';
 const logout = () => {
   alert('退出登录');
-  // 这里可以添加真正的退出逻辑，比如跳转到登录页
+  userStore().logout();
   router.push('/login');
 };
 </script>

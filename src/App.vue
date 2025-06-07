@@ -1,24 +1,76 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { computed, ref, onMounted } from 'vue'
+import { getCurrentUserType } from './infoModule/src/function/CurrentUser'
+import { userStore } from './infoModule/src/store/user'
 
 const route = useRoute()
+const router = useRouter()
+const userType = ref('')
 
 // 判断是否显示导航栏（在根路径时显示）
 const showNavigation = computed(() => route.path === '/')
+
+// 判断是否显示课程安排子系统（学生不显示）
+const showSectionModule = computed(() => userType.value !== 'ROLE_STUDENT')
+
+// 获取用户类型
+const fetchUserType = async () => {
+  try {
+    const type = await getCurrentUserType()
+    userType.value = type || ''
+    console.log('当前用户类型:', type)
+  } catch (error) {
+    console.error('获取用户类型失败:', error)
+  }
+}
+
+onMounted(() => {
+  fetchUserType()
+})
+
+// 退出登录
+const logout = () => {
+  alert('退出登录')
+  userStore().logout()
+  router.go(0);
+}
+
+// 点击选课系统后根据用户类型跳转
+const goToSelection = async () => {
+  const userType = await getCurrentUserType()
+
+  let targetPath = '/selection-student' // 默认学生
+  if (userType === 'ROLE_TEACHER') {
+    targetPath = '/selection-teacher'
+  } else if (userType === 'ROLE_ADMIN') {
+    targetPath = '/selection-admin'
+  }
+
+  router.push(targetPath)
+}
 </script>
 
 <template>
-  <div class="app-container">
-    <!-- 主导航页面 -->
+  <div class="app-container">    <!-- 主导航页面 -->
     <div v-if="showNavigation" class="main-navigation">
+      <!-- 退出登录按钮 -->
+      <div class="logout-container">
+        <button class="logout-btn" @click="logout">
+          <svg class="logout-icon" viewBox="0 0 1024 1024" width="16" height="16">
+            <path d="M868 732h-70.3c-4.8 0-9.3 2.1-12.3 5.8-7 8.5-14.5 16.7-22.4 24.5a353.84 353.84 0 0 1-112.7 75.9A352.8 352.8 0 0 1 512.4 866c-47.9 0-94.3-9.4-137.9-27.8a353.84 353.84 0 0 1-112.7-75.9 353.28 353.28 0 0 1-76.1-112.5c-18.4-43.7-27.8-90.1-27.8-137.9s9.4-94.2 27.8-137.9c17.8-42.1 43.4-80 76.1-112.5s70.5-58.1 112.7-75.9c43.6-18.4 90-27.8 137.9-27.8 47.9 0 94.3 9.3 137.9 27.8 42.2 17.8 80.1 43.4 112.7 75.9 7.9 7.9 15.3 16.1 22.4 24.5 3 3.7 7.6 5.8 12.3 5.8H868c6.3 0 10.2-7 6.7-12.3C863 663.1 840.4 618.2 810 590c-36.5-33.6-79.6-60.1-127.7-78.5C637.4 494.6 576.9 484 512.4 484s-124.9 10.6-169.9 27.5c-48.1 18.4-91.2 44.9-127.7 78.5C183.1 618.2 160.5 663.1 149 712.7c-3.5 5.3.4 12.3 6.7 12.3h70.3c4.8 0 9.3-2.1 12.3-5.8 7-8.5 14.5-16.7 22.4-24.5 36.5-33.6 79.6-60.1 127.7-78.5C433.3 598.6 470.8 590 512.4 590s79.1 8.6 124 25.5c48.1 18.4 91.2 44.9 127.7 78.5 30.4 28.1 53 73.1 64.5 122.7 3.5 5.3-.4 12.3-6.7 12.3z" fill="#fff"/>
+            <path d="M904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z" fill="#fff"/>
+          </svg>
+          退出登录
+        </button>
+      </div>
+      
       <div class="header">
         <h1>教学管理系统</h1>
         <p>请选择要访问的子系统</p>
       </div>
-      
-      <div class="module-grid">
-        <div class="module-card">
+        <div class="module-grid">
+        <div v-if="showSectionModule" class="module-card">
           <router-link to="/section" class="module-link">
             <div class="module-icon">📚</div>
             <h3>课程安排子系统</h3>
@@ -51,11 +103,11 @@ const showNavigation = computed(() => route.path === '/')
         </div>
 
         <div class="module-card">
-          <router-link to="/selection-student/CourseResultS/1" class="module-link">
+          <a href="#" class="module-link" @click.prevent="goToSelection">
             <div class="module-icon">📋</div>
             <h3>选课子系统</h3>
             <p>学生选课、教师课程、管理员管理</p>
-          </router-link>
+          </a>
         </div>
       </div>
     </div>
@@ -78,6 +130,43 @@ const showNavigation = computed(() => route.path === '/')
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  position: relative;
+}
+
+/* 退出登录按钮容器 */
+.logout-container {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  z-index: 10;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.logout-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .header {

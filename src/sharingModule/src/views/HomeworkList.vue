@@ -298,6 +298,7 @@
 <script setup>
 import { ref, computed, onMounted, defineProps } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { Files } from '@element-plus/icons-vue';
 import api from '../api/api';
 import dayjs from 'dayjs';
 import ResourceSelector from '../components/ResourceSelector.vue';
