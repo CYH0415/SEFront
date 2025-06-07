@@ -11,7 +11,7 @@ interface UserState {
 }
 
 // !! 重要: 这是一个用于前端测试的模拟标志。记得在连接真实后端时移除或设为 false !!
-const MOCK_BACKEND = true; // <--- 添加一个开关来控制模拟行为
+const MOCK_BACKEND = false; // <--- 添加一个开关来控制模拟行为
 
 export const userStore = defineStore('user', {
     state: (): UserState => ({
