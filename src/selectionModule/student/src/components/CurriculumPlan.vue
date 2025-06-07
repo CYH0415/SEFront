@@ -87,6 +87,7 @@
 </template>
 
 <script>
+import {getCurrentUserId, getCurrentUserType} from '/src/infoModule/src/function/CurrentUser.ts'
 export default {
   data() {
     return {
@@ -99,22 +100,28 @@ export default {
       searchCourseId: '',
       searchCourseName: '',
       searchCourseDept: '',
-      userId: this.$route.params.userId || '', // Initialize userId as null
+      userId: null, // Initialize userId as null
     };
   },
   
   mounted() {
-    // Assign userId from route params
-    const idFromRoute = this.$route.params.userId;
-    if (idFromRoute) {
-      this.userId = parseInt(idFromRoute, 10); // Use parseInt to convert the string to an integer
-    this.fetchCourses();
-    } else {
-      this.userId=1;
-      this.fetchCourses();
-    }
+    this.loadUserIdAndFetchCourses();
   },
   methods: {
+    async loadUserIdAndFetchCourses() {
+      try {
+        const userId = await getCurrentUserId(); // 使用导入的方法获取 userId
+        if (!userId) {
+          alert('无法获取用户ID，请重新登录');
+          return;
+        }
+        this.userId = userId;
+        await this.fetchCourses(); // 加载课程数据
+      } catch (error) {
+        console.error('加载用户信息失败:', error);
+        alert('加载用户信息失败，请刷新页面');
+      }
+    },
     async fetchCourses() {
       try {
         const response = await fetch('http://localhost:8083/student/getAllCourses');

@@ -41,9 +41,10 @@ const closeDropdown = () => {
   isDropdownVisible.value = false;
 };
 
+import {userStore} from '/src/infoModule/src/store/user.ts';
 const logout = () => {
   alert('退出登录');
-  // 这里可以添加真正的退出逻辑，比如跳转到登录页
+  userStore().logout();
   router.push('/login');
 };
 </script>

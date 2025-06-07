@@ -67,6 +67,7 @@
 </template>
 
 <script>
+import {getCurrentUserId, getCurrentUserType} from '/src/infoModule/src/function/CurrentUser.ts'
 export default {
   data() {
     return {
@@ -79,16 +80,25 @@ export default {
       onlyAvailable: false ,// 新增：只查看有余量教学班的选项
       daySearch:"",
       timeSearch:"",
-      selectAvailable:true
+      selectAvailable:true,
+      userId: null
     };
   },
-  mounted() {
-    this.getselectionTime();
-    this.searchCourses();// 页面加载时自动查询所有课程
-  },
-  computed: {
-    userId() {
-      return this.$route.params.userId;
+  async mounted() {
+    try {
+      const userId = await getCurrentUserId();
+      if (!userId) {
+        alert('用户未登录，请重新登录');
+        // 可以跳转到登录页或其他处理
+        return;
+      }
+      this.userId = userId;
+      // 然后执行其他需要 userId 的操作
+      await this.getselectionTime();
+      await this.searchCourses();
+    } catch (error) {
+      console.error('获取用户ID失败:', error);
+      alert('无法获取用户信息，请刷新页面重试');
     }
   },
   methods: {
