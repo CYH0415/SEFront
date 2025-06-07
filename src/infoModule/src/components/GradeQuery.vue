@@ -73,15 +73,9 @@ interface GradeDTO {
   courseName: string;
 }
 
-// 状态定义
 const gradeList = ref<GradeQueryDTO[]>([]);
 const searchKeyword = ref('');
 const chartInstances = new Map();
-//const token = localStorage.getItem('token');
-
-
-
-
 
 // 计算所有任务类型
 const taskTypes = computed(() => {
@@ -100,18 +94,15 @@ const filteredGrades = computed(() => {
       grade.courseId.toString().toLowerCase().includes(keyword) ||
       grade.courseName.toLowerCase().includes(keyword));
 });
-const studentId = ref<number|null>(0);
 // 页面加载时获取成绩数据
 onMounted(async () => {
   try {
-    /*// 获取当前登录用户ID (实际项目中应该从session获取)
-    const userResponse = await axios.get('/api/user/current');*/
-    studentId.value = await getCurrentUserId();
-    console.log('Current studentId.value before API call:', studentId.value);
-    console.log('Type of studentId.value:', typeof studentId.value);
+    const studentId = await getCurrentUserId();
+    console.log('Current studentId before API call:', studentId);
+    console.log('Type of studentId:', typeof studentId);
 
     // 获取学生的成绩数据
-    const gradeResponse = await axios.get(`/api/grades/student/${studentId.value}`);
+    const gradeResponse = await axios.get(`/api/grades/student/${studentId}`);
     const gradesData: GradeDTO[] = gradeResponse.data;
 
     // 按课程分组转换数据
@@ -126,7 +117,6 @@ onMounted(async () => {
         });
       }
 
-      // 将type转换为中文显示
       const taskName = translateTaskType(grade.type);
 
       coursesMap.get(grade.courseId)!.tasks.push({
@@ -142,7 +132,6 @@ onMounted(async () => {
   }
 });
 
-// 工具函数：转换任务类型为中文
 const translateTaskType = (type: 'attending' | 'homework' | 'test'): string => {
   const typeMap: Record<string, string> = {
     'attending': '出勤成绩',
@@ -152,13 +141,11 @@ const translateTaskType = (type: 'attending' | 'homework' | 'test'): string => {
   return typeMap[type] || type;
 };
 
-// 计算总分
 const calculateTotalScore = (tasks: GradeTaskDTO[]) => {
   if (!tasks || tasks.length === 0) return 0;
   return tasks.reduce((total, task) => total + (task.score * task.weight), 0).toFixed(2);
 };
 
-// 获取特定任务的成绩
 const getTaskScore = (row: GradeQueryDTO, taskName: string) => {
   const task = row.tasks.find(t => t.name === taskName);
   return task ? `${task.score}分 (${task.weight * 100}%)` : '-';
@@ -239,7 +226,7 @@ const destroyChart = (row: GradeQueryDTO) => {
   }
 };
 
-// 组件卸载前清理图表实例
+// 组件卸载前清理图表
 onBeforeUnmount(() => {
   chartInstances.forEach(chart => chart.dispose());
   chartInstances.clear();

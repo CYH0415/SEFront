@@ -8,10 +8,12 @@
 
     <el-card>
       <el-table :data="filteredGrades" border>
+        <el-table-column prop="id" label="id" />
         <el-table-column prop="studentId" label="学号" width="120" />
         <el-table-column prop="studentName" label="姓名" width="120" />
         <el-table-column prop="courseId" label="课程ID" width="120" />
         <el-table-column prop="courseName" label="课程名称" />
+        <el-table-column prop="name" label="类型" />
         <el-table-column prop="grade" label="成绩" width="100" />
         <el-table-column prop="status" label="状态" width="120">
           <template #default="{ row }">
@@ -96,8 +98,8 @@
 import "../assets/pages_styles.css";
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import axios from '../plugins/axios.ts';
-import { getCurrentUserType } from "../function/CurrentUser.ts";
+import axios from '../plugins/axios.ts'
+import {getCurrentUserId, getCurrentUserType} from "../function/CurrentUser.ts";
 
 // 定义GradeModifyDTO相关接口
 interface GradeStatusDTO {
@@ -106,6 +108,7 @@ interface GradeStatusDTO {
   studentName: string;
   courseId: number;
   courseName: string;
+  name: string;
   grade: number;
   status: '已确认' | '待审核' | '已修改' | '已拒绝';
 }
@@ -129,7 +132,7 @@ interface ApplicationDTO {
 interface GradeChangeDTO {
   gradeChangeId: number;
   takesId: number;
-  teacherId: number;
+  teacherId: number | null;
   result: boolean | null;
   name: string;
   newGrade: number;
@@ -158,16 +161,15 @@ const searchKeyword = ref('');
 const applyDialogVisible = ref(false);
 const showAdminSection = ref(false); // 根据实际用户角色切换
 const showTeacherSection = ref(false); // 根据实际用户角色切换
-const teacherId = ref<number>(11); // 当前登录教师的ID
-
-const userType = ref<string|null>(null);
+const teacherId = ref<number|null>(null);
 
 
 
 const applyForm = ref({
-  gradeId: '',
+  gradeId: 0,
   studentName: '',
   courseName: '',
+  name: '',
   originalGrade: 0,
   newGrade: 0,
   reason: ''
@@ -188,27 +190,16 @@ const pendingApplications = computed(() => {
 // 页面加载时获取数据
 onMounted(async () => {
   try {
-    userType.value = await getCurrentUserType();
-    console.log(userType.value);
-    console.log(userType.value === "ROLE_ADMIN");
-    console.log(userType.value === "ROLE_TEACHER");
-    if (userType.value === "ROLE_ADMIN"){
+    const userType = await getCurrentUserType();
+    if (userType === "ROLE_ADMIN"){
       showAdminSection.value = true;
+      await fetchApplications()
     }
-    if (userType.value === "ROLE_TEACHER"){
+    else if (userType === "ROLE_TEACHER"){
       showTeacherSection.value = true;
+      teacherId.value = await getCurrentUserId();
+      await fetchGradeList();
     }
-
-
-    // 获取当前登录用户ID (实际项目中应该从session获取)
-    // const userResponse = await axios.get('/api/user/current');
-    teacherId.value = 11;
-
-    // 获取教师的班级成绩列表
-    await fetchGradeList();
-
-    // 获取待审核的申请列表
-    await fetchApplications();
   } catch (error) {
     console.error('获取数据失败', error);
   }
@@ -218,16 +209,17 @@ onMounted(async () => {
 const fetchGradeList = async () => {
   try {
     const response = await axios.get(`/api/grades/teacher/${teacherId.value}`);
-
+    //console.log('后端原始响应 (response.data):', JSON.stringify(response.data, null, 2));
     // 转换数据格式
-    gradeList.value = response.data.map((item: any) => ({
-      id: item.gradeId.toString(),
+    gradeList.value = response.data.map((item: GradeStatusDTO) => ({
+      id: item.id,
       studentId: item.studentId,
       studentName: item.studentName,
       courseId: item.courseId,
       courseName: item.courseName,
+      name: item.name,
       grade: item.grade,
-      status: getGradeStatus(item)
+      status: item.status
     }));
   } catch (error) {
     console.error('获取成绩列表失败', error);
@@ -259,20 +251,6 @@ const fetchApplications = async () => {
   }
 };
 
-// 转换成绩状态
-const getGradeStatus = (grade: any): '已确认' | '待审核' | '已修改' | '已拒绝' => {
-  // 此处需要根据实际后端数据结构进行调整
-  if (grade.hasApplication) {
-    if (grade.applicationResult === null) {
-      return '待审核';
-    } else if (grade.applicationResult === true) {
-      return '已修改';
-    } else {
-      return '已拒绝';
-    }
-  }
-  return '已确认';
-};
 
 // 转换申请状态
 const getApplicationStatus = (application: GradeChangeDTO): 'pending' | 'approved' | 'rejected' => {
@@ -288,9 +266,10 @@ const getApplicationStatus = (application: GradeChangeDTO): 'pending' | 'approve
 // 打开申请对话框
 const openApplyDialog = (grade: GradeStatusDTO) => {
   applyForm.value = {
-    gradeId: grade.id,
+    gradeId: parseInt(grade.id),
     studentName: grade.studentName,
     courseName: grade.courseName,
+    name: grade.name,
     originalGrade: grade.grade,
     newGrade: grade.grade,
     reason: ''
@@ -308,12 +287,12 @@ const submitApplication = async () => {
   try {
     // 准备要提交的数据
     const gradeChange: Partial<GradeChangeDTO> = {
-      takesId: parseInt(applyForm.value.gradeId),
+      gradeId: applyForm.value.gradeId,
       teacherId: teacherId.value,
       result: null,
       newGrade: applyForm.value.newGrade,
       reason: applyForm.value.reason,
-      name: applyForm.value.reason
+      name: applyForm.value.name
     };
 
     // 发送申请
