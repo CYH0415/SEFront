@@ -6,7 +6,7 @@
 
     <el-card>
       <el-table :data="courseDetailsList" border style="width: 100%">
-        <el-table-column prop="sectionId" label="课程ID"></el-table-column>
+        <el-table-column prop="sectionId" label="Section ID"></el-table-column>
         <el-table-column prop="courseName" label="课程名称"></el-table-column>
         <el-table-column prop="semester" label="学期"></el-table-column>
         <el-table-column prop="year" label="学年"></el-table-column>
