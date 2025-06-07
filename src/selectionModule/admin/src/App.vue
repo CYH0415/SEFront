@@ -10,8 +10,7 @@
     <main class="content">
       <div class="top-bar">
         <div class="user-area" @click="toggleDropdown">
-          <img src="https://i.pravatar.cc/40" alt="头像" class="avatar" />
-          <span class="username">管理员姓名</span>
+          <span class="username">管理员，您好</span>
           <svg class="arrow" viewBox="0 0 1024 1024" width="12" height="12">
             <path d="M512 672L192 352h640z" fill="#333" />
           </svg>

@@ -27,6 +27,10 @@
           <option value="6">14:00-14:50</option>
           <option value="7">15:00-15:50</option>
           <option value="8">16:00-16:50</option>
+          <option value="9">17:00-17:50</option>
+          <option value="10">19:00-19:50</option>
+          <option value="11">20:00-20:50</option>
+          <option value="12">21:00-21:50</option>
         </select>
         <button @click="searchCourses" class="search-btn">查询</button>
         <input type="checkbox" id="onlyAvailable" v-model="onlyAvailable" @change="searchCourses" style="margin-left:15px;">
@@ -56,12 +60,19 @@
           <td>{{ course.capacity }}</td>
           <td>{{ course.candidate }}</td>
           <td>
-            <button v-if="course.is_selected" @click="dropCourse(course.name,course.id)" :disabled="!this.selectAvailable">退课</button>
-            <button v-else @click="selectCourse(course.name,course.id)" :disabled="!course.available || !this.selectAvailable">选择</button>
+            <button v-if="course.is_selected" @click="dropCourse(course.name,course.id)">退课</button>
+            <button v-else @click="selectCourse(course.name,course.id)" :disabled="!course.available">选择</button>
           </td>
         </tr>
         </tbody>
       </table>
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal-content">
+          <h2>提示</h2>
+          <p>当前不在选课时间范围内，请在选课时间内进行操作</p>
+          <button @click="showModal = false">关闭</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -80,8 +91,9 @@ export default {
       onlyAvailable: false ,// 新增：只查看有余量教学班的选项
       daySearch:"",
       timeSearch:"",
-      selectAvailable:true,
-      userId: null
+      selectAvailable:false,
+      userId: null,
+      showModal: false, // 控制模态框显示
     };
   },
   async mounted() {
@@ -149,7 +161,7 @@ export default {
     async queryCourseDatabase(courseName, college, teacher) {
       try {
         const params = new URLSearchParams();
-        const response = await fetch(`http://localhost:8083/student/${this.userId}/getSections?${params.toString()}`);
+        const response = await fetch(`http://localhost:8083/student/${this.userId}/getSections`);
         if (!response.ok) throw new Error('网络错误');
         const data = await response.json();
         // 先映射后筛选
@@ -176,12 +188,12 @@ export default {
           const matchTime =
               !this.timeSearch ||
               course.timeIds.includes(Number(this.timeSearch))
-              || course.timeIds.includes(Number(this.timeSearch) + 8)
-              || course.timeIds.includes(Number(this.timeSearch) + 16)
+              || course.timeIds.includes(Number(this.timeSearch) + 12)
               || course.timeIds.includes(Number(this.timeSearch) + 24)
-              || course.timeIds.includes(Number(this.timeSearch) + 32)
-              || course.timeIds.includes(Number(this.timeSearch) + 40)
-              || course.timeIds.includes(Number(this.timeSearch) + 48);
+              || course.timeIds.includes(Number(this.timeSearch) + 36)
+              || course.timeIds.includes(Number(this.timeSearch) + 48)
+              || course.timeIds.includes(Number(this.timeSearch) + 60)
+              || course.timeIds.includes(Number(this.timeSearch) + 72);
           return matchCourseName && matchCollege && matchTeacher && matchAvailable && matchDay && matchTime;
         });
       } catch (err) {
@@ -189,11 +201,15 @@ export default {
       }
     },
     async selectCourse(courseName, courseId) {
+      if(!this.selectAvailable) {
+        this.showModal=true;
+        return;
+      }
       const confirmSelection = confirm(`是否确认选择 ${courseName} 课程？`);
       if (confirmSelection) {
         try {
           const params = new URLSearchParams();
-          const response = await fetch(`http://localhost:8083/student/${this.userId}/chooseCourse/${courseId}?${params.toString()}`);
+          const response = await fetch(`http://localhost:8083/student/${this.userId}/chooseCourse/${courseId}`);
           if (!response.ok){
             // 先拿到后端返回的字符串
             const errorMsg = await response.text();
@@ -208,11 +224,15 @@ export default {
       }
     },
     async dropCourse(courseName, courseId) {
+      if(!this.selectAvailable) {
+        this.showModal=true;
+        return;
+      }
       const confirmDrop = confirm(`是否确认退选 ${courseName} 课程？`);
       if (confirmDrop) {
         try {
           const params = new URLSearchParams();
-          const response = await fetch(`http://localhost:8083/student/${this.userId}/dropCourse/${courseId}?${params.toString()}`);
+          const response = await fetch(`http://localhost:8083/student/${this.userId}/dropCourse/${courseId}`);
           if (!response.ok){
             // 先拿到后端返回的字符串
             const errorMsg = await response.text();
@@ -302,5 +322,28 @@ th {
 
 .search-btn:hover {
   background-color: #1565c0;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 32px 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px #0002;
+  min-width: 280px;
+  text-align: center;
+  border: 1px solid #ccc; /* 这里加边框 */
 }
 </style>
