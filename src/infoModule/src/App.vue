@@ -93,7 +93,7 @@
 <script setup lang="ts">
 import {ref, onMounted, watch} from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
-import axios from 'axios'
+import axios from './plugins/axios.ts';
 import {useRoute, useRouter} from 'vue-router'
 import { userStore } from "./store/user.ts";
 import {getCurrentUserId} from "./function/CurrentUser.ts";
@@ -264,9 +264,6 @@ const logout = () => {
   transition: transform 0.2s;
 }
 
-.rotate-180 {
-  transform: rotate(180deg);
-}
 
 .page-container {
   background-color: #f5f5f5;
@@ -280,7 +277,5 @@ const logout = () => {
   /*width: 100%;*/
 }
 
-body .el-table th.gutter{
-  display: table-cell!important;
-}
+
 </style>

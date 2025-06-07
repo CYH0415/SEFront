@@ -199,17 +199,17 @@ async function onCommitAttendance() {
 // 路由跳转函数
 function goToAssignments() {
   router.push({
-    name: 'Homework',
+    name: 'SharingHomework',
   });
 }
 function goToResources() {
   router.push({
-    name: 'ResourceTree',
+    name: 'SharingResourceTree',
   });
 }
 function goToCourseList() {
   router.push({
-    name: 'course-list'
+    name: 'SharingCourseList'
   });
 }
 
