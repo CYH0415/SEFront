@@ -276,6 +276,7 @@ const routes = [
     path: '/sharing', 
     name: 'Sharing', 
     component: SharingApp,
+    meta: { allowedRoles: ['teacher', 'student'] },
     children: [
     //   { path: '', redirect: 'course-list' },
       { path: 'course-list', name: 'SharingCourseList', component: CourseList },
