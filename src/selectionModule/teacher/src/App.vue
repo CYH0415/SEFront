@@ -9,6 +9,13 @@
       </nav>
     </aside>
     <main class="content">
+      <div class="back-button" @click="goToHome">
+        <svg class="back-icon" viewBox="0 0 1024 1024" width="16" height="16">
+          <path d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z" fill="#333"/>
+          <path d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z" fill="#333"/>
+        </svg>
+        <span>返回主页</span>
+      </div>
       <div class="top-bar">
         <div class="user-area" @click="toggleDropdown">
           <span class="username">教师姓名</span>
@@ -52,7 +59,10 @@ const toggleDropdown = () => {
 const closeDropdown = () => {
   isDropdownVisible.value = false;
 };
-
+// 回退到根目录
+const goToHome = () => {
+  window.location.href = 'http://localhost:5173/'
+}
 const logout = () => {
   alert('退出登录');
   userStore().logout();
@@ -158,6 +168,19 @@ const logout = () => {
   font-size: 15px;
   color: #333;
   margin-right: 5px;
+}
+
+/* 回退按钮 */
+.back-button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+  color: #0d47a1;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .arrow {
