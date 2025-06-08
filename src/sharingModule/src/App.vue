@@ -43,6 +43,7 @@
 import { onMounted, ref } from 'vue';
 import { getCurrentUserId, getCurrentUserType, getCurrentUserName } from '../../infoModule/src/function/CurrentUser';
 import { userStore } from '../../infoModule/src/store/user'
+import { useRouter } from 'vue-router'
 
 const isStudent = ref(false);
 const userId = ref(2);
@@ -50,6 +51,7 @@ const isReady = ref(false);
 
 const username = ref('加载中...')  // 初始显示加载中
 const dropdownVisible = ref(false)
+const router = useRouter();
 
 // 初始化用户信息
 const initUserInfo = async () => {
