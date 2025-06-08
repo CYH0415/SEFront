@@ -1,7 +1,7 @@
 <template>
   <div class="page-wrapper">
     <h1 class="page-title">教师控制台</h1>
-    <p class="welcome-text">欢迎回来，{{ username }}，Do you have anything to tell me?</p>
+    <p class="welcome-text">欢迎回来{{ username }}，Do you have anything to tell me?</p>
 
     <div class="actions">
       <div class="action-card" @click="navigateTo('/testing/teacher/question-bank')">
@@ -34,9 +34,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-
 const router = useRouter()
-const username = ref('王老师')
+const username = ref("");
 
 const navigateTo = (path) => {
   router.push(path)
