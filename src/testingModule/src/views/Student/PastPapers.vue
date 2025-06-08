@@ -139,7 +139,7 @@ const getCourseNameById = (secId) => {
 const secIdToCourseNameMap = ref({});
 const fetchStudentCourses = async () => {
   try {
-    const response = await axios.get(`http://localhost:8082/api/students/-1/courses`);
+    const response = await axios.get(`http://localhost:8080/api/students/-1/courses`);
 
     const courseList = response.data || [];
 
