@@ -208,6 +208,16 @@ const submitUpdate = async (row: any) => {
     return
   }
 
+  // 冲突检测：检查同一教室在同一学期是否有时间段冲突
+  const conflicts = checkTimeSlotConflicts(row, classroomId, parsedSlots)
+  if (conflicts.length > 0) {
+    const conflictMessages = conflicts.map(conflict => 
+      `课程 "${conflict.courseTitle}" (Section ID: ${conflict.secId}) 时间段: ${conflict.conflictingSlots.join(',')}`
+    )
+    ElMessage.warning(`检测到时间段冲突：\n${conflictMessages.join('\n')}`)
+    return
+  }
+
   try {
     await modifySection({
       sectionId: row.secId,
@@ -220,6 +230,45 @@ const submitUpdate = async (row: any) => {
   } catch (err) {
     ElMessage.error('保存失败')
   }
+}
+
+// 冲突检测函数
+const checkTimeSlotConflicts = (currentRow: any, targetClassroomId: number, targetTimeSlots: number[]) => {
+  const conflicts: any[] = []
+  
+  // 遍历当前表格数据，查找潜在冲突
+  tableData.value.forEach(row => {
+    // 跳过当前编辑的行
+    if (row.secId === currentRow.secId) return
+    
+    // 只检查同一学期和年份的课程
+    if (row.semester !== currentRow.semester || row.year !== currentRow.year) return
+    
+    // 获取该行的教室ID（优先使用新输入的教室ID）
+    const rowClassroomId = row.newClassroomId ? parseInt(row.newClassroomId) : row.classroomId
+    
+    // 只检查相同教室的冲突
+    if (rowClassroomId !== targetClassroomId) return
+    
+    // 获取该行的时间段
+    const rowTimeSlots = row.timeSlotIdsString
+      .split(',')
+      .map((s: string) => parseInt(s.trim()))
+      .filter((n: number) => !isNaN(n))
+    
+    // 查找重叠的时间段
+    const overlappingSlots = targetTimeSlots.filter(slot => rowTimeSlots.includes(slot))
+    
+    if (overlappingSlots.length > 0) {
+      conflicts.push({
+        secId: row.secId,
+        courseTitle: row.courseTitle,
+        conflictingSlots: overlappingSlots
+      })
+    }
+  })
+  
+  return conflicts
 }
 
 onMounted(fetchData)
