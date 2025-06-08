@@ -20,11 +20,11 @@
     </div>
 
     <!-- 录入考勤弹窗 -->
-    <el-dialog title="录入考勤成绩" v-model="isAttendanceVisible" center :style="{ width: '450px' }">
+    <el-dialog title="录入考勤成绩" v-model="isAttendanceVisible" center style="width: 50%;">
       <div class="attendance-score-box">
         <div class="attendance-list-box">
           <el-table :data="paginatedAttendanceData" border >
-            <el-table-column prop="studentName" label="姓名" width="100" />
+            <el-table-column prop="studentName" label="姓名" min-width="100" />
             <el-table-column label="分数" width="180">
               <template #default="{ row }">
                 <el-input
@@ -232,6 +232,7 @@ function goToCourseList() {
   align-items: center;
 }
 .attendance-list-box {
+  width: 70%;
   text-align: center;
 }
 
@@ -250,20 +251,23 @@ function goToCourseList() {
 }
 .course-detail {
   background-color: #f5f7fa;
-  padding: 15px 40px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   min-height: calc(100vh - 100px);
 }
 
 /* 课程详情标题和描述 */
 .header {
-  display: flex;
-  text-align: left;
-  margin-bottom: 24px;
-  padding-right: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 1.5rem;
 }
 
 .detail-box {
   width: 100%;
+  max-width: 1200px;
   height: 100%;
   box-sizing: border-box;
   display: flex;
@@ -297,6 +301,8 @@ h1 {
   padding: 10px;
   margin-bottom: 20px;
   border-radius: 8px;
+  width: 100%;
+  max-width: 1200px;
 }
 
 .navbar button {
