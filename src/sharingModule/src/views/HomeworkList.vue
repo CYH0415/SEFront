@@ -4,46 +4,123 @@
       <h2>作业列表</h2>
       <el-button v-if="!isStudent" size="large" @click="openHomeworkAssignDialog">布置作业</el-button>
     </div>
-    <!-- 学生表格 -->
-    <el-table v-if="isStudent" :data="paginatedInfo" border style="width: 100%">
-      <el-table-column prop="title" label="作业名称" width="200" />
-      <el-table-column prop="deadline" label="截止时间" width="180" />
-      <el-table-column label="提交情况" width="120">
-        <template #default="{ row }">
-          <span>{{ row.commitDescription !== null ? '已提交' : '未提交' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="批改情况" width="120">
-        <template #default="{ row }">
-          <span>{{ row.score !== null ? '已批改' : '未批改' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="350">
-        <template #default="{ row }">
-          <el-button size="small" @click="openDetailInfoDialog(row)">查看作业详情</el-button>
-          <el-button v-if="row.score !== null" size="small" @click="openGradeDialog(row)">查看批改结果</el-button>
-          <el-button v-if="row.commitDescription === null" size="small" @click="openHomeworkCommitDialog(row)">提交作业</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
 
-    <!-- 老师表格 -->
-    <el-table v-if="!isStudent" :data="paginatedInfo" border style="width: 100%">
-      <el-table-column prop="title" label="作业名称" width="200" />
-      <el-table-column prop="deadline" label="截止时间" width="180" />
-      <el-table-column label="是否最终提交" width="120">
-        <template #default="{ row }">
-          <span>{{ row.committed ? '已最终提交' : '未最终提交' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="300">
-        <template #default="{ row }">
-          <el-button size="small" @click="openDetailInfoDialog(row)">查看作业详情</el-button>
-          <el-button size="small" @click="openCorrectionListDialog(row)">批改情况</el-button>
-          <el-button v-if="!row.committed" size="small" @click="onFinalCommit(row)">最终提交</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <div class="homework-table">
+      <!-- 学生表格 -->
+      <el-table
+        v-if="isStudent"
+        :data="paginatedInfo"
+        border
+        style="width: 100%; max-width: 1200px; margin: 0 auto;"
+        size="medium"
+      >
+        <!-- 作业名称，自动省略并显示 tooltip -->
+        <el-table-column
+          prop="title"
+          label="作业名称"
+          min-width="200"
+          show-overflow-tooltip
+        />
+        <!-- 截止时间 -->
+        <el-table-column
+          prop="deadline"
+          label="截止时间"
+          width="180"
+        />
+        <!-- 提交情况 -->
+        <el-table-column
+          label="提交情况"
+          width="140"
+        >
+          <template #default="{ row }">
+            <span>
+              {{ row.commitDescription !== null ? '已提交' : '未提交' }}
+            </span>
+          </template>
+        </el-table-column>
+        <!-- 批改情况 -->
+        <el-table-column
+          label="批改情况"
+          width="140"
+        >
+          <template #default="{ row }">
+            <span>
+              {{ row.score !== null ? '已批改' : '未批改' }}
+            </span>
+          </template>
+        </el-table-column>
+        <!-- 操作按钮组 -->
+        <el-table-column
+          label="操作"
+          min-width="270"
+        >
+          <template #default="{ row }">
+            <el-button size="small" @click="openDetailInfoDialog(row)">查看详情</el-button>
+            <el-button
+              v-if="row.score !== null"
+              size="small"
+              @click="openGradeDialog(row)"
+            >查看批改结果</el-button>
+            <el-button
+              v-if="row.commitDescription === null"
+              size="small"
+              type="primary"
+              @click="openHomeworkCommitDialog(row)"
+            >提交作业</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <div class="homework-table">
+      <el-table
+        v-if="!isStudent"
+        :data="paginatedInfo"
+        border
+        style="width: 100%; max-width: 1200px; margin: 0 auto;"
+        size="medium"
+        :row-class-name="() => 'custom-row'"
+      >
+        <!-- 作业名称，自动省略并显示 tooltip -->
+        <el-table-column
+          prop="title"
+          label="作业名称"
+          min-width="200"
+          show-overflow-tooltip
+        />
+        <!-- 截止时间 -->
+        <el-table-column
+          prop="deadline"
+          label="截止时间"
+          width="200"
+        />
+        <!-- 是否最终提交 -->
+        <el-table-column
+          label="是否最终提交"
+          width="160"
+        >
+          <template #default="{ row }">
+            <span>{{ row.committed ? '已最终提交' : '未最终提交' }}</span>
+          </template>
+        </el-table-column>
+        <!-- 操作按钮组 -->
+        <el-table-column
+          label="操作"
+          min-width="250"
+        >
+          <template #default="{ row }">
+            <el-button size="small" @click="openDetailInfoDialog(row)">查看详情</el-button>
+            <el-button size="small" @click="openCorrectionListDialog(row)">批改情况</el-button>
+            <el-button
+              v-if="!row.committed"
+              size="small"
+              type="warning"
+              @click="onFinalCommit(row)"
+            >最终提交</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
 
     <!-- 分页 -->
     <div class="pagination-box">
@@ -57,43 +134,49 @@
     </div>
 
     <!-- 查看作业详情弹窗 -->
-    <el-dialog title="作业详情" v-model="isInfoVisible" width="50%">
-      <div>
+    <el-dialog
+      title="作业详情"
+      v-model="isInfoVisible"
+      width="50%"
+      class="homework-dialog"
+    >
+      <div class="homework-info">
         <p><strong>作业名称：</strong>{{ currentHomework.title }}</p>
         <p><strong>描述：</strong>{{ currentHomework.description }}</p>
         <p><strong>截止时间：</strong>{{ currentHomework.deadline }}</p>
         <p><strong>占比：</strong>{{ currentHomework.proportion * 100 }} %</p>
         <p><strong>附件：</strong></p>
       </div>
-      <div v-if="currentHomework.files.length > 0" style="max-height: 180px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
-            <div
-              v-for="(file, index) in currentHomework.files"
-              :key="index"
-              style="display: flex; align-items: center; margin-bottom: 8px;"
-            >
-              <img
-                :src="getIcon(file)"
-                alt="icon"
-                style="width: 24px; height: 24px; margin-right: 10px;"
-              />
-              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
-                {{ file }}
-                <el-button link @click="download(file)">
-                  下载
-                </el-button>
-              </span>
-            </div>
+
+      <div
+        v-if="currentHomework.files.length > 0"
+        class="file-list"
+      >
+        <div
+          v-for="(file, index) in currentHomework.files"
+          :key="index"
+          class="file-item"
+        >
+          <img
+            :src="getIcon(file)"
+            alt="icon"
+            class="file-icon"
+          />
+          <div class="file-info">
+            <span class="file-name">{{ file }}</span>
+            <el-button link class="download-btn" @click="download(file)">下载</el-button>
           </div>
+        </div>
+      </div>
     </el-dialog>
 
     <!-- 查看批改结果弹窗 -->
-    <el-dialog title="批改结果" v-model="isGradeVisible" width="50%">
-      <div>
+    <el-dialog title="批改结果" v-model="isGradeVisible" width="50%" class="grade-dialog">
+      <div class="dialog-content">
         <p><strong>作业名称：</strong>{{ currentHomework.title }}</p>
         <p><strong>分数：</strong>{{ currentHomework.score }}</p>
         <p><strong>评语：</strong>{{ currentHomework.feedback }}</p>
       </div>
-
     </el-dialog>
 
     <!-- 提交作业弹窗 -->
@@ -107,14 +190,8 @@
           <el-input v-model="homeworkRecordToCommit.description" type="textarea" placeholder="请输入描述内容" :rows="4" maxlength="255"/>
         </el-form-item>
 
-        <!-- 文件上传 -->
-        <div style="margin: 10px">
-          <el-button style="height: 75px; width: 250px; font-size: 18px; padding: 0 30px;" @click="() => isSelectVisible = true">
-            <el-icon color="black" style="margin-right: 10px;"><Files /></el-icon>
-            选择文件
-          </el-button>
-          <!-- 选中文件列表 -->
-          <div v-if="selectedFiles.length > 0" style="max-height: 180px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
+        <!-- 选中文件列表 -->
+          <div v-if="selectedFiles.length > 0" style="max-height: 180px; overflow-y: auto; margin-top: 20px; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
             <div
               v-for="(file, index) in selectedFiles"
               :key="index"
@@ -130,6 +207,13 @@
               </span>
             </div>
           </div>
+
+        <!-- 文件上传 -->
+        <div style="margin: 20px">
+          <el-button style="height: 75px; width: 250px; font-size: 18px; padding: 0 30px;" @click="() => isSelectVisible = true">
+            <el-icon color="black" style="margin-right: 10px;"><Files /></el-icon>
+            选择文件
+          </el-button>
         </div>
 
         <resource-selector
@@ -149,7 +233,7 @@
     </el-dialog>
 
     <!-- 布置作业弹窗 -->
-    <el-dialog title="布置作业" v-model="isHomeworkAssignVisible" width="70%">
+    <el-dialog title="布置作业" v-model="isHomeworkAssignVisible" width="50%">
       <el-form :model="currentHomework" label-width="auto" class="form-container">
         <!-- 作业名框 -->
         <el-form-item label="作业名" class="form-item">
@@ -172,13 +256,10 @@
           />
         </el-form-item>
 
-        <!-- 文件上传 -->
-        <div style="margin: 10px">
-          <el-button style="height: 75px; width: 250px; font-size: 18px; padding: 0 30px;" @click="() => isSelectVisible = true">
-            <el-icon color="black" style="margin-right: 10px;"><Files /></el-icon>
-            选择文件
-          </el-button>
-          <!-- 选中文件列表 -->
+        <el-form-item label="附件：" class="form-item">
+        </el-form-item>
+
+        <!-- 选中文件列表 -->
           <div v-if="selectedFiles.length > 0" style="max-height: 180px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
             <div
               v-for="(file, index) in selectedFiles"
@@ -195,6 +276,13 @@
               </span>
             </div>
           </div>
+
+        <!-- 文件上传 -->
+        <div style="margin: 20px">
+          <el-button style="height: 75px; width: 250px; font-size: 18px; padding: 0 30px;" @click="() => isSelectVisible = true">
+            <el-icon color="black" style="margin-right: 10px;"><Files /></el-icon>
+            选择文件
+          </el-button>
         </div>
 
         <resource-selector
@@ -214,11 +302,11 @@
     </el-dialog>
 
     <!-- 批改详情弹窗 -->
-    <el-dialog :title="correctionDetailTitle" v-model="isCorrectionListVisible" width="80%" :style="{ minWidth: '750px' }">
+    <el-dialog :title="correctionDetailTitle" v-model="isCorrectionListVisible" width="50%" :style="{ minWidth: '750px' }">
       <div class="correction-detail-box">
         <div class="correction-list-box">
           <el-table :data="paginatedRecord" border >
-            <el-table-column prop="studentName" label="姓名" width="200" />
+            <el-table-column prop="studentName" label="姓名" min-width="200" />
             <el-table-column label="提交情况" width="120">
               <template #default="{ row }">
                 <span>{{ row.description === null ? '未提交' : '已提交' }}</span>
@@ -229,11 +317,15 @@
                 <span>{{ row.score === null ? '未批改' : row.score }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="240">
+            <el-table-column label="操作" min-width="240">
               <template #default="{ row }">
-                <el-button v-if="row.description !== null" size="small" @click="openHomeworkRecordDialog(row)">查看提交详情</el-button>
+                <el-button v-if="row.description !== null" 
+                  size="small"
+                  style="outline: none; box-shadow: none;"
+                  @click="openHomeworkRecordDialog(row)">查看提交详情</el-button>
                 <el-button 
                   size="small" 
+                  style="outline: none; box-shadow: none;"
                   @click="openHomeworkCorrectionDialog(row)">
                   {{ row.score === null ? '批改' : '批改详情' }}
                 </el-button>
@@ -255,21 +347,37 @@
 
       <!-- 提交详情弹窗 -->
       <el-dialog title="" v-model="isHomeworkRecordVisible" append-to-body>
-        <div>
+        <div class="homework-info">
           <p><strong>姓名：</strong>{{ currentHomeworkRecord.studentName }}</p>
           <p><strong>描述：</strong>{{ currentHomeworkRecord.description }}</p>
           <p><strong>附件：</strong></p>
-          <div v-for="(file, index) in currentHomeworkRecord.files" :key="index" class="file-item">
-            <span>{{ file }}</span>
-            <el-button
-              size="small"
-              type="text"
-              @click="downloadFile(file)"
-              class="download-button"
+
+          <div
+            v-if="currentHomework.files.length > 0"
+            class="file-list-b"
+          >
+            <div
+              v-for="(file, index) in currentHomeworkRecord.files"
+              :key="index"
+              class="file-item"
             >
-              下载
-            </el-button>
+              <img
+                :src="getIcon(file)"
+                alt="icon"
+                class="file-icon"
+              />
+              <div class="file-info">
+                <span class="file-name">
+                  {{ file }}
+                  <el-button link @click="downloadFile(file)" class="download-btn">
+                    下载
+                  </el-button>
+                </span>
+              </div>
+              
+            </div>
           </div>
+          
         </div>
       </el-dialog>
 
@@ -392,7 +500,7 @@ async function getHomeworkInfoList() {
   }
 }
 
-// 下载文件
+// 下载学生作业附件文件
 async function downloadFile(name) {
   try {
     const response = await downloadApi.get('/api/file', {
@@ -623,7 +731,12 @@ async function onCorrectHomework() {
 async function onFinalCommit(row) {
   if (
     await ElMessageBox.confirm(
-      `确认提交？`
+      '确认提交？',
+      '最终提交', 
+      {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消'
+      }
     ).then(
       () => true,
       () => false
@@ -720,6 +833,7 @@ onMounted(async() => {
   width: 100%;
 }
 .list-box {
+  width: 100%;
   background: white;
   padding: 20px 40px;
   border-radius: 12px;
@@ -749,5 +863,119 @@ h2 {
   font-size: 20px;
   font-weight: bold;
   margin-bottom: 5;
+}
+
+.homework-table :deep(.el-table .cell) {
+  font-size: 16px !important;
+  line-height: 2 !important;
+}
+
+/* 可根据喜好调整 header 的加粗和背景色 */
+.homework-table .el-table th {
+  font-weight: 600;
+}
+
+.homework-dialog {
+  padding: 20px;
+}
+
+.homework-info {
+  font-size: 16px;
+  line-height: 1.8;
+  margin: 20px 20px;
+}
+
+.homework-info p {
+  text-align: left;
+  margin: 10px 0;
+}
+
+.homework-info strong {
+  font-weight: bold;
+  color: #333;
+}
+
+.file-list {
+  max-height: 180px;
+  overflow-y: auto;
+  margin: 20px 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+.file-list-b {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.file-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  flex: 1;                /* 整体占满剩余空间 */
+}
+
+.file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  font-size: 14px;
+}
+
+.download-btn {
+  margin-left: 10px;
+  font-size: 14px;
+  outline: none;
+  box-shadow: none;
+}
+
+.grade-dialog .dialog-content p{
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.grade-dialog .dialog-content strong{
+  color: #333;
+}
+
+.grade-dialog p {
+  margin-bottom: 16px;
+}
+
+.grade-dialog .el-dialog__header {
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  font-size: 18px;
+  color: #333;
+}
+
+.grade-dialog .el-dialog__body {
+  padding: 20px;
+}
+
+.dialog-content p {
+  font-size: 14px;
+}
+
+.dialog-content strong {
+  color: #555;
 }
 </style>

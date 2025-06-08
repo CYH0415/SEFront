@@ -3,46 +3,56 @@
     <h2>课程资源树</h2>
     <el-input
       v-model="query"
-      style="width: 240px; margin-top: 10px;"
+      class="search-input"
       placeholder="请输入关键字搜索"
       @input="onQueryChanged"
+      clearable
     />
     <el-tree
       ref="treeRef"
-      style="width: 100%; max-width: 800px"
+      class="resource-tree"
       :data="dataSource"
       node-key="id"
       default-expand-all
       :expand-on-click-node="false"
       :filter-node-method="filterMethod"
     >
-    <template #default="{ node }">
-      
+      <template #default="{ node }">
         <div class="custom-tree-node">
-          <span style="display: flex; align-items: center;">
-            <img class="node-icon" :src="node.data.type === 'file' ? getIcon(node.label) : '/icons/dir.svg'">
-            {{ node.label }}
-          </span>
-          <div>
-            <el-button v-if="node.data.type === 'directory'" type="primary" link @click="append(node)">
-              上传
-            </el-button>
-            <el-button v-if="node.data.type === 'file'" type="success" link @click="download(node)">
-              下载
-            </el-button>
+          <!-- 左侧图标+标签，动态缩进 -->
+          <div
+            class="node-left"
+            :style="{ paddingLeft: (node.level - 1) * 20 + 'px' }"
+          >
+            <img
+              class="node-icon"
+              :src="node.data.type === 'file' ? getIcon(node.label) : '/icons/dir.svg'"
+              alt=""
+            />
+            <span class="node-label">{{ node.label }}</span>
+          </div>
+          <div class="node-actions">
             <el-button
-              style="margin-left: 4px"
-              type="danger"
+              v-if="node.data.type === 'directory'"
+              size="small"
               link
-              @click="remove(node)"
+              @click="append(node)"
+            >上传</el-button>
+            <el-button
+              v-if="node.data.type === 'file'"
+              size="small"
+              link
+              @click="download(node)"
+            >下载</el-button>
+            <el-button
               v-if="!props.isStudent"
-            >
-              删除
-            </el-button>
+              size="small"
+              link
+              type="danger"
+              @click="remove(node)"
+            >删除</el-button>
           </div>
         </div>
-
-
       </template>
     </el-tree>
 
@@ -50,7 +60,7 @@
     <el-dialog
       title="创建文件夹/上传文件"
       v-model="isAppendVisible"
-      width="400px"
+      width="600px"
     >
     <div class="radio-header">
       <el-radio-group v-model="createType">
@@ -78,7 +88,7 @@
         
 
         <!-- 选中文件列表 -->
-        <div v-if="selectedFiles.length > 0" style="max-height: 180px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
+        <div v-if="selectedFiles.length > 0" style="max-height: 180px; overflow-y: auto; margin: 20px; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
           <div
             v-for="(file, index) in selectedFiles"
             :key="index"
@@ -316,7 +326,7 @@ onMounted(async () => {
 <style scoped>
 .resource-tree-container {
   min-width: 800px;
-  width: 80%;
+  width: 100%;
   background: white;
   padding: 30px 40px;
   border-radius: 12px;
@@ -359,6 +369,107 @@ h2 {
 }
 
 ::v-deep(.el-upload-dragger) {
+  min-height: 260px !important;
+  background-color: #f5f5f5;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+:deep(.el-tabs__header) {
+  margin-bottom: 0 !important;
+}
+
+.radio-header {
+  display: flex !important;
+  justify-content: center !important;
+  margin-bottom: 15px;
+}
+
+.resource-tree-container {
+  min-width: 800px;
+  width: 100%;
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resource-tree-container h2 {
+  margin: 0 0 16px;
+  color: #0d47a1;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 20px;
+}
+
+.resource-tree {
+  width: 100%;
+}
+
+/* 整体行高和行内间距 */
+:deep(.el-tree .el-tree-node__content) {
+  padding: 12px 16px !important;
+  min-height: 48px;
+}
+
+.custom-tree-node {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* 移除原来固定的 padding，改为动态 inline 样式 */
+.node-left {
+  display: flex;
+  align-items: center;
+}
+
+.node-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+}
+
+.node-label {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* 操作按钮组 */
+.node-actions .el-button {
+  margin-left: 8px;
+  font-size: 14px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.node-actions .el-button:first-child {
+  margin-left: 0;
+}
+
+/* 弹窗 footer 居中 */
+.center-footer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* 其他深度样式 */
+:deep(.el-upload-dragger) {
   min-height: 260px !important;
   background-color: #f5f5f5;
   display: flex !important;
