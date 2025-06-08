@@ -1,30 +1,28 @@
 <template>
   <div class="course-select">
-
     <div class="header">
       <h1>请选择课程</h1>
       <p class="description">以下为您的课程：</p>
     </div>
 
     <div class="course-list-container">
-
       <div class="course-list-box">
-        <el-table :data="paginatedCourse" border style="width: 100%">
-          <!-- 课程名列 -->
-          <el-table-column prop="title" label="课程名" width="200">
-          <template #default="{ row }">
-            <router-link :to="{ 
-              name: 'SharingCourseDetail', 
-              params: { sectionId: row.sectionId },
-            }">{{ row.title }}</router-link>
-          </template>
-        </el-table-column>
-          
-          <el-table-column prop="departmentName" label="开课学院" width="200" />
-          <el-table-column prop="year" label="学年" width="75"/>
-          <el-table-column prop="semester" label="学期" width="75"/>
-          <el-table-column prop="time" label="上课时间" width="200"/>
-          <el-table-column prop="teacherName" label="教师" width="100" />
+        <el-table :data="paginatedCourse" stripe border size="medium" style="width: 100%">
+          <el-table-column prop="title" label="课程名" min-width="200">
+            <template #default="{ row }">
+              <router-link
+                :to="{ name: 'SharingCourseDetail', params: { sectionId: row.sectionId } }"
+                class="course-link"
+              >
+                {{ row.title }}
+              </router-link>
+            </template>
+          </el-table-column>
+          <el-table-column prop="departmentName" label="开课学院" min-width="160" />
+          <el-table-column prop="year" label="学年" width="80" />
+          <el-table-column prop="semester" label="学期" width="80" />
+          <el-table-column prop="time" label="上课时间" min-width="180" />
+          <el-table-column prop="teacherName" label="教师" min-width="160" />
         </el-table>
       </div>
 
@@ -37,9 +35,7 @@
           class="pagination-bar"
         />
       </div>
-
     </div>
-
   </div>
 </template>
 
@@ -101,73 +97,92 @@ onMounted(async() => {
 <style scoped>
 .course-select {
   background-color: #f5f7fa;
-  padding: 15px 40px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   min-height: calc(100vh - 100px);
 }
 
 .header {
-  text-align: left;
-  margin-bottom: 24px;
-  padding-right: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
+
+
 
 h1 {
   color: #0d47a1;
-  font-size: 30px;
+  font-size: 2rem;
   font-weight: bold;
   margin: 0;
 }
 
 .description {
-  font-size: 15px;
+  font-size: 1rem;
   color: #555;
-  margin-top: 6px;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
 }
 
 .course-list-container {
   width: 100%;
-  height: 100%;
-  box-sizing: border-box;
+  max-width: 1200px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background-color: #f5f7fa;
 }
 
-/* 内容块，卡片式设计 */
 .course-list-box {
-  background: white;
-  padding: 50px 60px;
-  border-radius: 12px;
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  text-align: center;
+  transition: transform 0.2s;
+}
+.course-list-box:hover {
+  transform: translateY(-4px);
+}
+
+.course-link {
+  color: #0d47a1;
+  font-weight: 500;
+  text-decoration: none;
+}
+.course-link:hover {
+  text-decoration: underline;
 }
 
 .pagination-box {
-  margin-top: 30px;
-  width: 100%;
-  align-items: center;
+  margin-top: 1.5rem;
+  display: flex;
   justify-content: center;
 }
 
-.schedule-item {
-  font-size: 16px;
-  color: #666;
-  margin: 8px 0;
-}
-
-/* 按钮特效 */
-.schedule-btn {
-  width: 100%;
-  font-size: 18px;
-  height: 50px;
-  border-radius: 8px;
-}
-
-/* 分页栏居中 */
 .pagination-bar {
   display: flex;
   justify-content: center;
-  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .course-select {
+    padding: 1rem;
+  }
+  .course-list-box {
+    padding: 1rem;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  .description {
+    font-size: 0.875rem;
+  }
+  .el-table th,
+  .el-table td {
+    padding: 0.5rem;
+  }
 }
 </style>
